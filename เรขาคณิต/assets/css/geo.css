@@ -178,10 +178,10 @@ input{-webkit-user-select:text;user-select:text;}
   backdrop-filter:blur(22px) saturate(170%);
   -webkit-backdrop-filter:blur(22px) saturate(170%);
 }
+/* 22px คือขนาดเล็กสุดที่โลโก้ถูกใช้ในโปรเจกต์ ใหญ่กว่าไอคอนเดิม (17px) เพราะโลโก้มี
+   สามชั้นซ้อนกัน (แถบ ขา วงบานพับ) ส่วนไอคอนเดิมเป็นเส้นชั้นเดียวจึงเล็กกว่านี้ได้ */
 .geo-brand .logo-mark{width:30px;height:30px;border-radius:9px;}
-.geo-brand .logo-mark svg{width:17px;height:17px;}
-/* ธีมมืดใช้เขียวพาสเทลเป็นพื้นโลโก้ ไอคอนขาวจะจมหาย ต้องพลิกเป็นหมึกเข้ม */
-:root:not([data-theme="light"]) .geo-brand .logo-mark{color:#08251a;}
+.geo-brand .logo-mark svg{width:22px;height:22px;}
 
 .geo-title{
   font-family:var(--display);font-weight:700;font-size:1.02rem;

@@ -120,10 +120,16 @@ header.scrolled nav::after{opacity:1;}
 }
 header.scrolled .nav-refract{opacity:1;}
 .logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:1.25rem;}
+/* พื้นขาวเพราะโลโก้ถือสีของตัวเองมาแล้ว (มิ้นต์ + หมึกเข้ม) วางบนไล่เฉดเขียว-ฟ้าเดิม
+   มิ้นต์จะจมหายไปกับพื้น และไม่ใส่ color เพราะไม่มีเส้นไหนใน SVG ใช้ currentColor แล้ว
+
+   ขอบ 1px จำเป็นเฉพาะธีมสว่าง ซึ่งพื้นหน้าเป็น #f5f7f9 — ชิปขาวล้วนจะไม่มีขอบให้เห็น
+   ในธีมมืดขอบนี้แทบมองไม่ออกอยู่แล้ว จึงเขียนครั้งเดียวใช้ได้ทั้งสองธีม */
 .logo-mark{
   width:36px;height:36px;border-radius:11px;
-  background:linear-gradient(135deg,var(--green),var(--blue));
-  display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;
+  background:#ffffff;
+  box-shadow:inset 0 0 0 1px rgba(19,26,36,.10);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
 .nav-links{display:flex;align-items:center;gap:4px;position:relative;}
 .nav-links a{
