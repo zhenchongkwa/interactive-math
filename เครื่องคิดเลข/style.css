@@ -149,6 +149,10 @@ body {
    shift-carry lights — was chosen against this white and goes on meaning what it meant.
    (assets/css/layout.css:245 keeps the Math Lab graph light for the same reason.) */
 .display {
+  /* A finger drawn across a block is a carry, not a scroll. Without this the browser claims
+     the gesture for panning the page and the block never moves — which is what happened to
+     every drag on a phone before the pointer path in script.js existed. */
+  touch-action: none;
   position: relative; /* anchor for copies that are pinned while sliding out */
   background: #ffffff;
   border-radius: 14px;
@@ -390,7 +394,9 @@ body {
   white-space: nowrap;
   text-align: left;
 }
-.block-hint.block-listable:hover .answers {
+.block-hint.block-listable:hover .answers,
+/* ...and on a phone, where nothing hovers, a tap opens it (script.js sets the class). */
+.block-hint.block-listable.is-open .answers {
   display: block;
 }
 /* The curve two letters draw between them, tucked into the corner so it stays out of the
@@ -474,6 +480,7 @@ body {
   padding: 10px;
   line-height: 0;
   cursor: grab;
+  touch-action: none;             /* the drag carries the frame, it does not scroll the page */
 }
 .graph.dragging .graph-plot { cursor: grabbing; }
 .graph-plot svg { display: block; width: 320px; height: 320px; }
@@ -1105,8 +1112,129 @@ html.cursor-away .cur-ring {
 /* CSS can turn off what CSS started; the particle canvas and the pointer damping are shut
    down separately by IM.motionOK in assets/js/core.js, since a stylesheet cannot stop a
    requestAnimationFrame loop. */
+/* ============================================
+   Mobile mode
+
+   Keyed off [data-device="mobile"] rather than a width, for the two reasons written out at
+   length in หน้าเว็บ/assets/css/layout.css: a phone turned sideways is wider than any
+   breakpoint and still a finger, and a reader who picked "computer" is owed the desktop
+   exactly as it was however narrow their window is.
+   ============================================ */
+
+/* ---------- the mode bar ---------- */
+.modes { margin-bottom: 12px; }
+.modes[hidden] { display: none; }
+
+.mode-row {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, .1);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12);
+}
+.mode-row button {
+  flex: 1;
+  min-height: 42px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 100px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: var(--sans);
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+.mode-row button:active { background: rgba(255, 255, 255, .12); }
+/* The mode changes what every tap on the display means, so which one is on has to be read
+   at a glance and not by comparison with the other two. */
+.mode-row button.active {
+  color: var(--accent-ink);
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  border-color: transparent;
+}
+.mode-say {
+  margin: 8px 4px 0;
+  color: var(--ink-faint);
+  font-size: .74rem;
+  line-height: 1.55;
+}
+
+/* ---------- layout ---------- */
+:root[data-device="mobile"] .app { width: 100%; padding: 14px; }
+:root[data-device="mobile"] body { padding: 14px 12px 24px; gap: 16px; }
+:root[data-device="mobile"] .grid button { padding: 18px 0; font-size: 1.05rem; }
+:root[data-device="mobile"] .letters button { min-height: 44px; }
+:root[data-device="mobile"] .letters-toggle { min-height: 48px; }
+
+/* The back link and the three corner buttons both claimed the top of the page and landed on
+   top of the heading. The link goes back into the flow and the buttons stay pinned, with the
+   heading pushed clear of them. */
+:root[data-device="mobile"] .back-home {
+  position: static;
+  align-self: flex-start;
+  order: -1;
+  min-height: 44px;
+}
+:root[data-device="mobile"] .gear { top: 12px; right: 12px; }
+:root[data-device="mobile"] .lamp { right: calc(12px + 44px + 6px); }
+:root[data-device="mobile"] .slate { right: calc(12px + (44px + 6px) * 2); }
+:root[data-device="mobile"] .page-head { padding-top: 8px; }
+
+/* The card and the A–Z drawer become sheets across the bottom, which is where a thumb is. */
+:root[data-device="mobile"] .sheet {
+  top: auto;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: auto;
+  max-height: 72vh;
+  border-radius: 22px 22px 0 0;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+:root[data-device="mobile"] .letters { grid-template-columns: repeat(6, 1fr); }
+
+/* The graph sits in the flow under the machine rather than pinned to a corner there is no
+   room for, and gets buttons for the wheel and the double-click a finger does not have. */
+/* 340px flat is wider than a 320px phone, and <body> has overflow-x:hidden, so the right
+   edge of the plot was quietly sliced off rather than scrolled to. The viewBox on the svg
+   keeps the drawing square at whatever width it is given, so a cap is all it needs.
+   Only here: on a computer the panel is pinned to a corner with room to spare, and 320
+   means 320. */
+:root[data-device="mobile"] .graph {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  width: 100%;
+  margin-bottom: 4px;
+}
+:root[data-device="mobile"] .graph-plot svg {
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  aspect-ratio: 1;
+}
+.graph-zoom { display: none; gap: 4px; }
+:root[data-device="mobile"] .graph-zoom { display: flex; }
+.graph-zoom button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 10px;
+  color: var(--ink-soft);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  -webkit-tap-highlight-color: transparent;
+}
+.graph-zoom button:active { color: var(--ink); }
+
 @media (prefers-reduced-motion: reduce) {
   .app { animation: none; }
+  .mode-row button { transition: none; }
   .sheet { animation: none; }
   .graph { animation: none; }
   button { transition: none; }

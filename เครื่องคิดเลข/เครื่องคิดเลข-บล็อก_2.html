@@ -49,6 +49,20 @@
 </header>
 
 <div class="app">
+  <!-- ============================================
+       แถบโหมด — โหมดมือถือเท่านั้น (script.js ถอด hidden ออกให้เมื่อ IM.isMobile)
+       เครื่องนี้พูดกับผู้ใช้ด้วย Shift กับ Ctrl แทบทั้งหมด ซึ่งนิ้วไม่มีสักปุ่ม
+       สามปุ่มนี้จึงตั้งธงเดียวกันที่ปุ่มจริงตั้ง — data-mode ถูกอ่านจาก script.js
+       ============================================ -->
+  <div class="modes" id="calcModes" hidden>
+    <div class="mode-row" role="group" aria-label="โหมดการแตะ">
+      <button type="button" data-mode="move" aria-pressed="true">ปกติ</button>
+      <button type="button" data-mode="shift" aria-pressed="false">ยกพจน์</button>
+      <button type="button" data-mode="ctrl" aria-pressed="false">แก้ค่า</button>
+    </div>
+    <p class="mode-say" id="calcModeSay"></p>
+  </div>
+
   <div class="display" id="display"></div>
 
   <div class="grid">

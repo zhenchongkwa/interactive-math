@@ -40,6 +40,18 @@ let startedAt = -1;                           // and where in the display it sto
 let enteringIds = new Set();
 let exitingIds = new Set();
 
+/* Shift and ctrl are the whole vocabulary of this machine: shift picks up a term, ctrl points
+   the keypad at a slot and does the seven other things listed on the card. A phone has
+   neither key, so the mode bar above the display sets these flags instead, and every reading
+   of a modifier goes through the two functions below.
+   The flags are OR'd onto the real keys rather than replacing them — a keyboard still works
+   the way it did, and nothing downstream has to know which one it was. */
+const touchMods = { shift: false, ctrl: false };
+const onPhone = !!(window.IM && window.IM.isMobile);
+
+const shiftOn = e => e.shiftKey || touchMods.shift;
+const ctrlOn = e => e.ctrlKey || e.metaKey || touchMods.ctrl;
+
 function isSign(block) {
   return block !== undefined && block.hintOf === null
     && (coreOf(block) === '+' || coreOf(block) === MINUS);
@@ -513,7 +525,7 @@ function markReceiving(side, from) {
 // bar, or the bar itself — takes the fraction, all of it, wherever it is put down: what is
 // written over a bar is no more a thing of its own than what is written under one.
 function takeByHand(e) {
-  if (!e.shiftKey || e.ctrlKey || e.metaKey || e.button !== 0) return;
+  if (!shiftOn(e) || ctrlOn(e) || e.button !== 0) return;
   const node = e.target.closest('.block');
   const block = node === null ? undefined : blocks.find(b => String(b.id) === node.dataset.id);
   if (block === undefined || block.hintOf !== null) return;
@@ -664,14 +676,17 @@ function dropCarry(carry, x, y) {
   if (!crossOver([out.lifted], 'over', side, out.from)) putBack([out.lifted], out.from, -1);
 }
 
-display.addEventListener('mousedown', takeByHand);
-window.addEventListener('mousemove', e => {
+// Pointer events rather than mouse ones, so a finger follows a carried fraction the same way
+// a cursor does. A mouse raises both sets, and a pointer event carries button and clientX/Y
+// under the same names, so nothing about the cursor's behaviour changes by reading these.
+display.addEventListener('pointerdown', takeByHand);
+window.addEventListener('pointermove', e => {
   if (halfCarry === null) return;
   moveGhost(halfCarry.ghost, e.clientX, e.clientY);
   if (halfCarry.divisor) markReceiving(sideAt(e.clientX, e.clientY), halfCarry.from);
   else moveRun(halfCarry.run, e.clientX, e.clientY);
 });
-window.addEventListener('mouseup', e => {
+window.addEventListener('pointerup', e => {
   if (halfCarry === null) return;
   const carry = halfCarry;
   halfCarry = null;
@@ -681,6 +696,160 @@ window.addEventListener('mouseup', e => {
   display.querySelectorAll('.dragging').forEach(node => node.classList.remove('dragging'));
   dropCarry(carry, e.clientX, e.clientY);
 });
+
+/* ============================================
+   Carrying a block with a finger
+
+   The browser's own dragging is what moves a block on a computer, and it is not raised from
+   touch at all on iOS — the whole point of this machine, moving a term across the "=", was
+   simply not there on a phone. What follows is the way in for a finger, and it takes the same
+   three steps beginCarry / carryOver / endCarry that a mouse drag does.
+
+   A press that travels is a drag, and the block follows the finger. A press that does not is
+   a tap, and the block is lifted and waits: the next tap is where it goes. Both work, because
+   a finger dragging something small over a small screen is fiddly and a term that waits can
+   be aimed at leisure — and neither costs anything, since the difference between them is only
+   whether the finger moved before it left.
+   ============================================ */
+const CARRY_SLOP = 8;                         // travelled less than this and it was a tap
+let touchCarry = null;
+
+function carriedNodes() {
+  return dragged.map(nodeOf).filter(n => n !== null);
+}
+
+function endTouchCarry(x, y) {
+  if (touchCarry !== null && touchCarry.ghost !== null) touchCarry.ghost.remove();
+  touchCarry = null;
+  if (dragged.length === 0) return;
+  carryOver(x, y);
+  endCarry();
+}
+
+if (onPhone) {
+  display.addEventListener('pointerdown', e => {
+    if (halfCarry !== null) return;           // a fraction is already being followed by hand
+
+    // Something is held waiting to be put down, and this is where it goes.
+    if (touchCarry !== null && touchCarry.held) {
+      e.preventDefault();
+      endTouchCarry(e.clientX, e.clientY);
+      return;
+    }
+    // In edit mode a tap points the keypad rather than picking anything up, so the press is
+    // left alone for the click handler that reads it.
+    if (touchMods.ctrl) return;
+
+    const node = e.target.closest('.block');
+    if (node === null) return;
+    const block = blocks.find(b => String(b.id) === node.dataset.id);
+    if (block === undefined || block.hintOf !== null) return;
+    // A lit "=" is a button before it is a block; a tap on it works the equation out.
+    if (block.value === '=' && block.active) return;
+
+    e.preventDefault();
+    touchCarry = { pointerId: e.pointerId, block, x0: e.clientX, y0: e.clientY, moved: false, held: false, ghost: null };
+  });
+
+  window.addEventListener('pointermove', e => {
+    if (touchCarry === null || touchCarry.held || e.pointerId !== touchCarry.pointerId) return;
+
+    if (!touchCarry.moved) {
+      if (Math.hypot(e.clientX - touchCarry.x0, e.clientY - touchCarry.y0) < CARRY_SLOP) return;
+      touchCarry.moved = true;
+      beginCarry(touchCarry.block, touchMods.shift);
+      markDragging(dragged);
+      touchCarry.ghost = showGhost(carriedNodes(), e.clientX, e.clientY);
+    }
+    moveGhost(touchCarry.ghost, e.clientX, e.clientY);
+    carryOver(e.clientX, e.clientY);
+  });
+
+  window.addEventListener('pointerup', e => {
+    if (touchCarry === null || e.pointerId !== touchCarry.pointerId) return;
+
+    if (touchCarry.moved) {
+      endTouchCarry(e.clientX, e.clientY);
+      return;
+    }
+    if (touchCarry.held) return;
+    // A tap: take hold of it and wait. The ghost stays under where the finger left, so what
+    // is being carried is on show the whole time it is waiting.
+    beginCarry(touchCarry.block, touchMods.shift);
+    if (dragged.length === 0) { touchCarry = null; return; }
+    markDragging(dragged);
+    touchCarry.held = true;
+    touchCarry.ghost = showGhost(carriedNodes(), e.clientX, e.clientY);
+  });
+
+  // A carry the browser takes back — a call arriving, the page going away — is put down where
+  // it stood rather than left half lifted with the blocks faded behind it.
+  window.addEventListener('pointercancel', () => {
+    if (touchCarry === null) return;
+    const at = startedAt;
+    const term = dragged;
+    if (touchCarry.ghost !== null) touchCarry.ghost.remove();
+    touchCarry = null;
+    display.querySelectorAll('.dragging').forEach(node => node.classList.remove('dragging'));
+    dragged = [];
+    carrying = false;
+    carriedAs = 'sign';
+    startedOn = null;
+    startedAt = -1;
+    if (term.length > 0) putBack(term, null, at);
+  });
+
+  /* ---------- the mode bar ----------
+     Three switches standing in for two keys and the absence of them. Each says outright what
+     the key it replaces does, because the whole difficulty with ctrl and shift here was that
+     neither announced itself — the card in the corner exists for that same reason. */
+
+  const modeBar = document.getElementById('calcModes');
+  const modeSay = document.getElementById('calcModeSay');
+
+  const MODES = {
+    move:  { shift: false, ctrl: false, says: 'ลากบล็อกทีละตัวไปวางตรงไหนก็ได้ · แตะค้างไว้แล้วแตะที่หมายก็ได้' },
+    shift: { shift: true,  ctrl: false, says: 'ยกทั้งพจน์ · ข้าม = แล้วกลับเครื่องหมายให้เอง · ที่ตัวส่วนคือยกตัวหารออก' },
+    ctrl:  { shift: false, ctrl: true,  says: 'แตะเพื่อเล็งคีย์แพดไปที่ช่องนั้น · แตะเส้นเศษส่วนเป็นทศนิยม · แตะตัวอักษรเขียวดูคำตอบ' }
+  };
+
+  if (modeBar !== null) {
+    const wearMode = name => {
+      const on = MODES[name] || MODES.move;
+      touchMods.shift = on.shift;
+      touchMods.ctrl = on.ctrl;
+      if (modeSay !== null) modeSay.textContent = on.says;
+      modeBar.querySelectorAll('[data-mode]').forEach(b => {
+        const is = b.dataset.mode === name;
+        b.classList.toggle('active', is);
+        b.setAttribute('aria-pressed', String(is));
+      });
+      // The green and blue the display lights up in are driven by these same two classes, so
+      // a mode has to say the same thing to the display that holding the key would have.
+      display.classList.toggle('picking', on.ctrl);
+      display.classList.toggle('choosing', on.shift && !on.ctrl);
+      markCarry();
+    };
+
+    modeBar.addEventListener('click', e => {
+      const btn = e.target.closest('button[data-mode]');
+      if (btn === null) return;
+      wearMode(btn.dataset.mode);
+    });
+
+    modeBar.hidden = false;
+    wearMode('move');
+  }
+
+  /* The list of answers behind a "N คำตอบ" label drops down on hover, which a finger never
+     does. A tap opens it instead, and a second one puts it away. */
+  display.addEventListener('click', e => {
+    const label = e.target.closest('.block-listable');
+    if (label === null) return;
+    e.stopPropagation();
+    label.classList.toggle('is-open');
+  });
+}
 
 // An answer the "=" put down is kept in step with the equation it was worked out from,
 // which holds only while it is where it was put. Carried off somewhere else it becomes a
@@ -774,52 +943,85 @@ function fillEmptySide(side) {
   blocks.splice(side === 'left' ? eq : eq + 1, 0, zero);
 }
 
+/* Taking hold of a block, letting go of it, and following it in between: three steps the
+   browser's own dragging used to own outright. A finger cannot use them — dragstart is not
+   raised from touch on iOS at all, and only unreliably on Android — so the same three steps
+   are written here as functions, and the pointer path in the mobile section at the foot of
+   this file walks through them in its own time. Neither way has a second copy of the
+   reasoning; there is one carry, reachable two ways. */
+
+// What shift takes hold of, taken hold of: the term rather than the block it was pressed on.
+function beginCarry(block, asTerm) {
+  carriedAs = 'sign';
+  carrying = asTerm;
+  if (!asTerm) dragged = [block];
+  else ({ run: dragged, as: carriedAs } = carryOf(block));
+  startedOn = sideOfTerm();
+  startedAt = blocks.indexOf(dragged[0]);
+}
+
+// Where the carry would land if it were let go here: the gap opens live among the blocks
+// staying put, and an "=" it is held over lights up and becomes pressable.
+function carryOver(x, y) {
+  if (dragged.length === 0) return;
+  let changed = false;
+
+  const nearest = findNearestBlock(x, y);
+  if (nearest.element) {
+    const nearestBlock = blocks.find(b => String(b.id) === nearest.element.dataset.id);
+    if (nearestBlock && nearestBlock.value === '=' && !dragged.includes(nearestBlock) && !nearestBlock.active) {
+      nearestBlock.active = true;
+      changed = true;
+    }
+  }
+
+  // Where the carried blocks land is worked out among the ones staying put, so a term of
+  // two blocks slots in as one and the arithmetic of the indices stays the same either way.
+  if (placeRun(dragged, x, y, carrying)) changed = true;
+
+  if (changed) render();
+}
+
+function endCarry() {
+  display.querySelectorAll('.dragging').forEach(node => node.classList.remove('dragging'));
+  const landedOn = sideOfTerm();
+  const crossed = carrying && startedOn !== null && landedOn !== null && landedOn !== startedOn;
+  const asTerm = carrying;
+  const term = dragged;
+  const as = carriedAs;
+  const leftBehind = startedOn;
+  const from = startedAt;
+  dragged = [];
+  carrying = false;
+  carriedAs = 'sign';
+  startedOn = null;
+  startedAt = -1;
+  // A factor has only the one place to go: crossing turns it into a divisor, and anywhere
+  // short of that leaves it multiplying something it was not, so a drag that stops there is
+  // put back rather than half made.
+  if (as !== 'sign') {
+    if (crossed) releaseAnswers(term);
+    if (!crossed || !crossOver(term, as, landedOn, null)) putBack(term, null, from);
+    return;
+  }
+  settleTerm(term, from, leftBehind, asTerm);
+}
+
 function attachBlockHandlers(el) {
   el.addEventListener('dragstart', e => {
     const block = blocks.find(b => String(b.id) === el.dataset.id);
     if (!block) return;
-    carriedAs = 'sign';
-    carrying = e.shiftKey;
     // Shift carries the term rather than the block, which is what it lights up. A divisor is
     // not carried this way at all — it is followed by hand, from the press onwards.
-    if (!e.shiftKey) dragged = [block];
-    else ({ run: dragged, as: carriedAs } = carryOf(block));
-    startedOn = sideOfTerm();
-    startedAt = blocks.indexOf(dragged[0]);
+    beginCarry(block, shiftOn(e));
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', el.dataset.id);
-    requestAnimationFrame(() => dragged.forEach(b => {
-      const node = nodeOf(b);
-      if (node) node.classList.add('dragging');
-    }));
+    requestAnimationFrame(() => markDragging(dragged));
   });
-  el.addEventListener('dragend', () => {
-    display.querySelectorAll('.dragging').forEach(node => node.classList.remove('dragging'));
-    const landedOn = sideOfTerm();
-    const crossed = carrying && startedOn !== null && landedOn !== null && landedOn !== startedOn;
-    const asTerm = carrying;
-    const term = dragged;
-    const as = carriedAs;
-    const leftBehind = startedOn;
-    const from = startedAt;
-    dragged = [];
-    carrying = false;
-    carriedAs = 'sign';
-    startedOn = null;
-    startedAt = -1;
-    // A factor has only the one place to go: crossing turns it into a divisor, and anywhere
-    // short of that leaves it multiplying something it was not, so a drag that stops there is
-    // put back rather than half made.
-    if (as !== 'sign') {
-      if (crossed) releaseAnswers(term);
-      if (!crossed || !crossOver(term, as, landedOn, null)) putBack(term, null, from);
-      return;
-    }
-    settleTerm(term, from, leftBehind, asTerm);
-  });
+  el.addEventListener('dragend', endCarry);
   el.addEventListener('drop', e => e.preventDefault());
   el.addEventListener('click', e => {
-    if (!e.ctrlKey && !e.metaKey) return;
+    if (!ctrlOn(e)) return;
     // This listener is registered before render() assigns the "=" onclick, so stopping
     // immediately is what keeps a ctrl-click from also firing the equals action.
     e.preventDefault();
@@ -884,25 +1086,7 @@ function findNearestBlock(x, y) {
 // where the dragged block should land and open a gap there live.
 display.addEventListener('dragover', e => {
   e.preventDefault();
-  if (dragged.length === 0) return;
-
-  const nearest = findNearestBlock(e.clientX, e.clientY);
-  let changed = false;
-
-  // Dragging another block onto an "=" block lights it up and makes it pressable.
-  if (nearest.element) {
-    const nearestBlock = blocks.find(b => String(b.id) === nearest.element.dataset.id);
-    if (nearestBlock && nearestBlock.value === '=' && !dragged.includes(nearestBlock) && !nearestBlock.active) {
-      nearestBlock.active = true;
-      changed = true;
-    }
-  }
-
-  // Where the carried blocks land is worked out among the ones staying put, so a term of
-  // two blocks slots in as one and the arithmetic of the indices stays the same either way.
-  if (placeRun(dragged, e.clientX, e.clientY, carrying)) changed = true;
-
-  if (changed) render();
+  carryOver(e.clientX, e.clientY);
 });
 
 display.addEventListener('drop', e => e.preventDefault());
@@ -951,7 +1135,9 @@ function render() {
     if (!el) {
       el = document.createElement('div');
       el.className = 'block';
-      el.draggable = true;
+      // Native dragging is left off on a phone: it does not work there, and where Android
+      // does start one from a long press it fights the pointer path that replaced it.
+      el.draggable = !onPhone;
       el.dataset.id = key;
       attachBlockHandlers(el);
     }
@@ -974,7 +1160,7 @@ function render() {
     el.classList.toggle('block-sign', b.hintOf === null && (coreOf(b) === '+' || coreOf(b) === MINUS));
     // A fraction lights the half being typed into rather than the block around both.
     el.classList.toggle('typing', aim !== null && aim.kind === 'core');
-    el.draggable = b.hintOf === null;
+    el.draggable = !onPhone && b.hintOf === null;
     const listable = b.hintOf !== null && solution !== null && solution.values.length > 1;
     el.classList.toggle('block-listable', listable);
     if (listable) writeAnswerList(el, solution.name, solution.values);
@@ -2642,7 +2828,27 @@ function buildGraphPanel(panel) {
   names.className = 'graph-names';
   const notes = document.createElement('div');
   notes.className = 'graph-notes';
-  head.append(names, notes);
+
+  /* The wheel winds the frame in and out and a double-click puts it back where it started.
+     A finger has neither, and a double-tap belongs to the browser's own zoom, so on a phone
+     the same three go on the panel as buttons. Style.css shows them only there. */
+  const zoom = document.createElement('div');
+  zoom.className = 'graph-zoom';
+  [
+    ['+', 'ซูมเข้า', () => graphGoTo(Math.max(GRAPH_RANGE_MIN, graphRange / GRAPH_ZOOM_STEP), graphCenter)],
+    ['−', 'ซูมออก', () => graphGoTo(Math.min(GRAPH_RANGE_MAX, graphRange * GRAPH_ZOOM_STEP), graphCenter)],
+    ['⟲', 'กลับกรอบตั้งต้น', () => graphGoTo(GRAPH_RANGE_START, { x: 0, y: 0 })],
+  ].forEach(([face, label, act]) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = face;
+    btn.title = label;
+    btn.setAttribute('aria-label', label);
+    btn.addEventListener('click', act);
+    zoom.appendChild(btn);
+  });
+
+  head.append(names, notes, zoom);
 
   // Only this takes the drag. The strips above and below it are for reading, and a press on
   // one of them should no more move the frame than a press on the title of a page moves it.
@@ -3246,9 +3452,9 @@ function rootLast() {
 // Shift reads the display in terms rather than in blocks, and lights what it reads in
 // green. Ctrl wins while both are down, since that is the one that writes.
 const trackPicking = e => {
-  const ctrl = e.ctrlKey || e.metaKey;
+  const ctrl = ctrlOn(e);
   display.classList.toggle('picking', ctrl);
-  display.classList.toggle('choosing', e.shiftKey && !ctrl);
+  display.classList.toggle('choosing', shiftOn(e) && !ctrl);
   markCarry();
 };
 window.addEventListener('keydown', trackPicking);
@@ -3264,7 +3470,10 @@ display.addEventListener('mouseleave', () => {
   markCarry();
 });
 window.addEventListener('blur', () => {
-  display.classList.remove('picking', 'choosing');
+  // A mode set on the bar is a switch the reader threw, not a key they are holding, so it
+  // survives the window losing focus the way a held key cannot.
+  display.classList.toggle('picking', touchMods.ctrl);
+  display.classList.toggle('choosing', touchMods.shift && !touchMods.ctrl);
   markCarry();
 });
 
@@ -3393,7 +3602,7 @@ function nearestOnCurve(px, py) {
 // of stays under it however far the frame is wound in.
 let graphDrag = null;
 
-graphPanel.addEventListener('mousedown', e => {
+graphPanel.addEventListener('pointerdown', e => {
   // Only the plot itself is dragged. The strips above and below carry the reading, and a
   // press on one of them should no more move the frame than a press on a caption would.
   if (graphParts === null || e.target.closest('.graph-plot') === null) return;
@@ -3408,7 +3617,7 @@ graphPanel.addEventListener('mousedown', e => {
   hideGraphPointer();
 });
 
-window.addEventListener('mousemove', e => {
+window.addEventListener('pointermove', e => {
   if (graphDrag === null) return;
   graphCenter = {
     x: graphCenter.x - (e.clientX - graphDrag.x) * graphDrag.perPixel,
@@ -3420,7 +3629,12 @@ window.addEventListener('mousemove', e => {
 });
 
 // Let go anywhere, even off the panel, and the drag is over.
-window.addEventListener('mouseup', () => {
+window.addEventListener('pointerup', () => {
+  if (graphDrag === null) return;
+  graphDrag = null;
+  graphPanel.classList.remove('dragging');
+});
+window.addEventListener('pointercancel', () => {
   if (graphDrag === null) return;
   graphDrag = null;
   graphPanel.classList.remove('dragging');
@@ -3439,7 +3653,7 @@ graphPanel.addEventListener('dblclick', () => {
 // the curve. The reading is rounded to a tenth of a grid square — fine enough to be worth
 // having, coarse enough not to flicker through a new digit every pixel — so it follows the
 // zoom, a square being worth less the further in the frame is wound.
-graphPanel.addEventListener('mousemove', e => {
+graphPanel.addEventListener('pointermove', e => {
   if (graphDrag !== null) return;             // a drag is moving the frame, not reading it
   if (graphParts === null || currentGraph === null) return;
   const parts = graphParts;
@@ -3486,7 +3700,7 @@ graphPanel.addEventListener('mousemove', e => {
   parts.readX.value.textContent = readX;
   parts.readY.value.textContent = readY;
 });
-graphPanel.addEventListener('mouseleave', hideGraphPointer);
+graphPanel.addEventListener('pointerleave', hideGraphPointer);
 
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const lettersDiv = document.getElementById('letters');
