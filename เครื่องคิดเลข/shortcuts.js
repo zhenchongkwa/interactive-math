@@ -63,9 +63,23 @@
       ]
     },
     {
+      /* This card is a list of keys, which is exactly what a phone has none of. The bar above
+         the display is where those keys went, so a reader who came here looking for them is
+         told so first — before the four sections that all begin "hold ctrl". */
+      title: 'บนมือถือ',
+      only: 'mobile',
+      rows: [
+        { k: ['ปกติ'], d: 'ลากบล็อกทีละตัว หรือแตะยกแล้วแตะที่หมาย' },
+        { k: ['ยกพจน์'], d: 'เท่ากับกด Shift ค้าง — ทุกอย่างในหัวข้อ "บนจอแสดงผล" ใช้ได้หมด' },
+        { k: ['แก้ค่า'], d: 'เท่ากับกด Ctrl ค้าง — ทุกอย่างในหัวข้อ "Ctrl" ใช้ได้หมด' },
+        { k: ['+ − ⟲'], d: 'ปุ่มบนหัวกราฟ แทนล้อเมาส์และดับเบิลคลิก' }
+      ]
+    },
+    {
       title: 'เพิ่มเติม',
       rows: [
         { k: ['☀'], d: 'ปุ่มข้างเกียร์ — สลับโหมดสว่าง/มืด (จำค่าที่เลือกไว้)' },
+        { k: ['⌷'], d: 'ปุ่มถัดไป — สลับโหมดคอมพิวเตอร์/มือถือ' },
         { k: ['⌘'], d: 'บน Mac ใช้แทน Ctrl ได้ทุกที่' },
         { k: ['Esc'], d: 'ปิดหน้าต่างนี้' }
       ]
@@ -197,6 +211,10 @@
   panel.appendChild(head);
 
   SECTIONS.forEach(function (section) {
+    // A section marked for one device is left out on the other, rather than shown greyed or
+    // qualified: a card of shortcuts is only useful if everything on it can be pressed.
+    if (section.only === 'mobile' && !(w.IM && w.IM.isMobile)) return;
+
     var title = document.createElement('h3');
     title.className = 'sheet-title';
     title.textContent = section.title;

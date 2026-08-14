@@ -28,6 +28,13 @@ Interactive Math เป็นโครงงานคอมพิวเตอร
 
 เปิดผ่านลิงก์ GitHub Pages ด้านบนได้เลย หรือจะ clone แล้วดับเบิลคลิกไฟล์ `.html` เปิดในเบราว์เซอร์โดยตรงก็ได้ ไม่ต้องมีเซิร์ฟเวอร์หรือเชื่อมต่ออินเทอร์เน็ต (ยกเว้นฟอนต์และวิดีโอ YouTube ที่ต้องใช้เน็ต)
 
+### คอมพิวเตอร์หรือมือถือ
+
+หน้าแรกจะถามว่าใช้อุปกรณ์อะไร เดาให้ก่อนแล้วเลือกทับได้ จำไว้ใช้ทุกหน้า เปลี่ยนได้ตลอดจากปุ่มไอคอนจอ/มือถือในทุกหน้า
+
+- **คอมพิวเตอร์** — เหมือนเดิมทุกอย่าง
+- **มือถือ** — จัดหน้าใหม่ให้แตะง่าย ตัดเอฟเฟกต์ที่ต้องมีเมาส์ (การ์ดเอียงตามเคอร์เซอร์ เคอร์เซอร์วาดเอง อนุภาคพื้นหลัง) และเพิ่มปุ่มแทนคีย์ลัด: เครื่องคิดเลขได้แถบโหมด ปกติ/ยกพจน์/แก้ค่า ส่วนกระดานเรขาคณิตได้แถบปุ่มวางจุด เลือก วัดค่า แก้ค่า พร้อมปุ่มลบ ย้อนกลับ คัดลอก วาง และตาราง
+
 ### ทีมผู้จัดทำ
 
 นักเรียนโรงเรียนเลยพิทยาคม 3 คน — Developer/Project Manager, Product Owner, Tester/Document Manager
@@ -52,6 +59,13 @@ Interactive Math is a computer science school project by students at Loei Pittay
 ### Usage
 
 Open it via the GitHub Pages link above, or clone the repo and open any `.html` file directly in a browser — no server or internet connection required (except for web fonts and YouTube-hosted lesson videos).
+
+### Computer or phone
+
+The landing page asks which one you're on — it guesses first, you can override, and the answer is remembered across every page. Switch any time from the monitor/phone button each page carries.
+
+- **Computer** — exactly as it was.
+- **Phone** — one-column layout with finger-sized targets, the mouse-only effects turned off (cursor-following card tilt, the drawn cursor, the particle field), and buttons where the keyboard shortcuts were: the calculator gains a normal / lift-term / edit mode bar, and the geometry board gains place, select, measure and edit modes plus delete, undo, copy, paste and the rulers.
 
 ### Team
 
