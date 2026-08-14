@@ -17,6 +17,9 @@
     document.documentElement.dataset.theme = dark ? 'dark' : 'light';
   })();
 </script>
+<!-- โหมดอุปกรณ์ — ต้องอยู่ก่อน <link> ด้วยเหตุผลเดียวกับสคริปต์ธีมข้างบน
+     ดูคำอธิบายเต็มที่ ../หน้าเว็บ/index.html ข้อความชุดนี้เหมือนกันทุกหน้า -->
+<script>(function(){var d=null;try{d=localStorage.getItem('im-device');}catch(e){}if(d!=='mobile'&&d!=='desktop')d=(matchMedia('(pointer:coarse)').matches||innerWidth<=820)?'mobile':'desktop';document.documentElement.dataset.device=d;})();</script>
 <!-- ฟอนต์ที่ tokens.css อ้างถึงไม่ได้ถูกโหลดไว้ที่ไหนใน assets/ เลย เว็บเดิมคงลิงก์เอง
      เปิดแบบ file:// ออฟไลน์แล้ว request นี้ล้มเหลวเฉยๆ ไม่พัง เพราะ --sans ใน style.css
      ต่อ system stack เดิมไว้ท้ายสุดแล้ว -->

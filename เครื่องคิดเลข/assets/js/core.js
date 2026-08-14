@@ -245,4 +245,23 @@
      ไม่งั้นหน้าเบื้องหลังจะไหลตามขณะดูวิดีโอ */
   IM.scrollLocked = false;
 
+  /* ---------- โหมดอุปกรณ์ (desktop/mobile) ----------
+     ข้อความชุดเดียวกับใน หน้าเว็บ/assets/js/core.js — แก้ที่ไหนต้องแก้ให้ครบทั้งสามสำเนา
+     (หน้านี้ไม่มีบล็อกธีมของเว็บแม่ เพราะเครื่องคิดเลขคุมธีมเองด้วยคีย์ 'calc-theme'
+     ใน shortcuts.js แต่โหมดอุปกรณ์ใช้ร่วมกันทุกหน้า จึงต้องมีที่นี่ด้วย)
+
+     ค่าถูกตั้งโดย inline script ใน <head> ซึ่งต้องรันก่อน CSS โหลด ที่นี่แค่อ่าน
+     กฎ CSS ของโหมดมือถือทุกข้อ key จาก [data-device="mobile"] ไม่ใช่ @media
+     โหมดคอมจึงไม่ match กฎใหม่สักข้อ */
+
+  IM.device = document.documentElement.dataset.device === 'mobile' ? 'mobile' : 'desktop';
+  IM.isMobile = IM.device === 'mobile';
+
+  IM.setDevice = function (next) {
+    if (next !== 'mobile' && next !== 'desktop') return;
+    try { localStorage.setItem('im-device', next); } catch (e) {}
+    if (next === IM.device) return;
+    w.location.reload();
+  };
+
 })(window);

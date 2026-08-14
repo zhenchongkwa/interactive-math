@@ -847,6 +847,9 @@ button:active { transform: scale(.96); }
 /* The theme switch sits beside the gear, one button's width and one gap to its left, so the
    two read as a pair of controls rather than one control and a stray. */
 .lamp { right: calc(18px + 44px + 8px); }
+/* ...and the device switch sits one further along, so the three read as one row of
+   controls. Same step, so the gaps stay even however many there are. */
+.slate { right: calc(18px + (44px + 8px) * 2); }
 /* Held open, it takes the brand green, so the card and the button that opened it read as
    one thing. */
 .gear-on {

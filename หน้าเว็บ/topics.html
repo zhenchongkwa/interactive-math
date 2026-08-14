@@ -9,6 +9,9 @@
      ก่อนสลับเป็นขาว — synchronous ตรงๆ ไม่ต้องรอ DOMContentLoaded -->
 <script>(function(){try{if(localStorage.getItem('im-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
 
+<!-- โหมดอุปกรณ์ — ดูคำอธิบายเต็มที่ index.html ข้อความชุดนี้เหมือนกันทุกหน้า -->
+<script>(function(){var d=null;try{d=localStorage.getItem('im-device');}catch(e){}if(d!=='mobile'&&d!=='desktop')d=(matchMedia('(pointer:coarse)').matches||innerWidth<=820)?'mobile':'desktop';document.documentElement.dataset.device=d;})();</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">

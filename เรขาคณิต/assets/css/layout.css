@@ -185,6 +185,14 @@ header.scrolled .nav-refract{opacity:1;}
 [data-theme="light"] .theme-toggle .i-sun{display:flex;}
 [data-theme="light"] .theme-toggle .i-moon{display:none;}
 
+/* ปุ่มสลับโหมดอุปกรณ์ — ใช้เปลือกเดียวกับ .theme-toggle ทั้งดุ้น ต่างแค่คู่ไอคอน
+   หลักการอ่านเหมือนกัน: ปุ่มแสดง "สิ่งที่คุณอยู่ในนั้น" ไม่ใช่สิ่งที่จะเปลี่ยนไป
+   สลับด้วย CSS ล้วนจาก [data-device] เช่นเดียวกัน จึงไม่ต้องรอ JS */
+.theme-toggle .i-phone{display:none;}
+.theme-toggle .i-monitor{display:flex;}
+[data-device="mobile"] .theme-toggle .i-phone{display:flex;}
+[data-device="mobile"] .theme-toggle .i-monitor{display:none;}
+
 .menu-btn{display:none;background:none;border:none;cursor:pointer;padding:8px;}
 .menu-btn span{display:block;width:22px;height:2px;background:var(--ink);margin:5px 0;border-radius:2px;}
 

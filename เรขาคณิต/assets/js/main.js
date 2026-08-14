@@ -16,7 +16,7 @@
 
      แต่ละหน้าโหลดสคริปต์ไม่เท่ากัน (hero/lab มีแค่หน้าแรก, lessons มีแค่หน้าคลังบทเรียน)
      จึงข้ามตัวที่ไม่ได้ลงทะเบียนไว้เงียบๆ ไม่ใช่ข้อผิดพลาด */
-  var ORDER = ['scroll', 'theme', 'geo', 'hero', 'lab', 'lessons', 'tools', 'reveal', 'field', 'tilt', 'cursor'];
+  var ORDER = ['scroll', 'theme', 'device', 'geo', 'hero', 'lab', 'lessons', 'tools', 'reveal', 'field', 'tilt', 'cursor'];
 
   function boot() {
     for (var i = 0; i < ORDER.length; i++) {

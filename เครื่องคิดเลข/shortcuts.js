@@ -138,10 +138,32 @@
     return svg;
   }
 
+  // The pair for the device switch, read the same way as the sun and the moon: the button
+  // shows what you are standing in, not what pressing it would fetch. Same drawings the
+  // other two pages use for the same button.
+  function monitorIcon() {
+    var svg = strokeSvg();
+    svg.appendChild(svgNode('rect', { x: 2.6, y: 4, width: 18.8, height: 12.4, rx: 1.8 }));
+    svg.appendChild(svgNode('path', { d: 'M9 20.4h6M12 16.4v4' }));
+    return svg;
+  }
+
+  function phoneIcon() {
+    var svg = strokeSvg();
+    svg.appendChild(svgNode('rect', { x: 6.6, y: 2.4, width: 10.8, height: 19.2, rx: 2.4 }));
+    svg.appendChild(svgNode('path', { d: 'M10.6 5.4h2.8' }));
+    return svg;
+  }
+
   var lamp = document.createElement('button');
   lamp.className = 'gear lamp';
   lamp.type = 'button';
   lamp.dataset.cursor = '';
+
+  var slate = document.createElement('button');
+  slate.className = 'gear slate';
+  slate.type = 'button';
+  slate.dataset.cursor = '';
 
   var toggle = document.createElement('button');
   toggle.className = 'gear';
@@ -198,9 +220,37 @@
     panel.appendChild(list);
   });
 
+  document.body.appendChild(slate);
   document.body.appendChild(lamp);
   document.body.appendChild(toggle);
   document.body.appendChild(panel);
+
+  /* ---------- desktop and mobile ----------
+     Which one the page opened in was settled before the first stylesheet loaded, by the
+     inline script in the head, the same way the theme was. The choice proper is made on the
+     landing page; this is the way out when the guess was wrong — a tablet reporting a fine
+     pointer, or someone who wants to see the other one.
+
+     IM.setDevice reloads the page, since what a module subscribes to is decided once at
+     boot. Nothing here has to put anything back. */
+
+  var IM = w.IM;
+
+  function showDevice() {
+    var mobile = IM && IM.device === 'mobile';
+    slate.textContent = '';
+    slate.appendChild(mobile ? phoneIcon() : monitorIcon());
+    slate.setAttribute('aria-label', mobile ? 'สลับเป็นโหมดคอมพิวเตอร์' : 'สลับเป็นโหมดมือถือ');
+    slate.setAttribute('title', mobile ? 'ตอนนี้: โหมดมือถือ' : 'ตอนนี้: โหมดคอมพิวเตอร์');
+    slate.setAttribute('aria-pressed', String(!!mobile));
+  }
+
+  showDevice();
+
+  slate.addEventListener('click', function (e) {
+    e.stopPropagation();                 // ...or the document listener would shut the card
+    if (IM && IM.setDevice) IM.setDevice(IM.device === 'mobile' ? 'desktop' : 'mobile');
+  });
 
   /* ---------- light and dark ----------
      Which one the page opens in was settled before the first stylesheet loaded, by the

@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Interactive Math</title>
+
+<!-- โหมดอุปกรณ์ — ต้องรันก่อน CSS โหลด ไม่งั้นปุ่มที่เลือกไว้จะกระพริบสลับข้างหนึ่งเฟรม
+     หน้านี้เป็นที่ที่ผู้ใช้ "เลือก" ส่วนหน้าอื่นแค่ "อ่าน" ค่าที่เลือกไว้
+     เดาจากอุปกรณ์ให้ก่อน เลือกทับได้ตลอด ข้อความชุดนี้เหมือนกันทุกหน้า -->
+<script>(function(){var d=null;try{d=localStorage.getItem('im-device');}catch(e){}if(d!=='mobile'&&d!=='desktop')d=(matchMedia('(pointer:coarse)').matches||innerWidth<=820)?'mobile':'desktop';document.documentElement.dataset.device=d;})();</script>
+
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
   body{
@@ -26,7 +32,48 @@
   .avatar svg{width:38px;height:38px;color:#08251a;}
 
   h1{font-size:1.4rem;font-weight:800;letter-spacing:-.01em;}
-  .bio{color:#94a2b3;font-size:.9rem;max-width:32ch;line-height:1.5;margin-bottom:6px;}
+  .bio{color:#94a2b3;font-size:.9rem;max-width:32ch;line-height:1.5;}
+
+  /* ---------- ตัวเลือกอุปกรณ์ ----------
+     เลือกที่นี่ที่เดียว แล้วทุกหน้าอ่านค่าเดียวกันจาก localStorage
+     โหมดคอม = ของเดิมทุกอย่าง โหมดมือถือ = เลย์เอาต์ใหม่ + ปุ่มแทนคีย์ลัด
+     ปุ่มสองอันนี้เลื่อนแถบเขียวไปมาแทนการเปลี่ยนสีทีละปุ่ม จะได้เห็นว่าเป็นสวิตช์
+     ไม่ใช่ลิงก์สองอัน */
+  .device{
+    position:relative;display:flex;
+    width:100%;max-width:420px;
+    padding:5px;border-radius:100px;
+    background:rgba(255,255,255,.07);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.09);
+  }
+  /* แถบที่เลื่อน วางใต้ปุ่มทั้งสอง ตำแหน่งคุมด้วย data-device บน <html> ล้วนๆ
+     ไม่ต้องรอ JS ตั้งคลาสให้ทีหลัง */
+  .device::before{
+    content:'';position:absolute;z-index:0;
+    top:5px;bottom:5px;left:5px;width:calc(50% - 5px);
+    border-radius:100px;
+    background:linear-gradient(180deg,#88f4c5,#34c98a);
+    box-shadow:0 6px 16px -8px rgba(78,227,160,.7);
+    transition:transform .22s cubic-bezier(.4,0,.2,1);
+  }
+  :root[data-device="mobile"] .device::before{transform:translateX(100%);}
+  .device button{
+    position:relative;z-index:1;flex:1;
+    padding:11px 10px;border:0;background:none;
+    font:inherit;font-size:.88rem;font-weight:700;
+    color:#94a2b3;cursor:pointer;
+    border-radius:100px;
+    transition:color .22s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  :root[data-device="desktop"] .device button[data-device="desktop"],
+  :root[data-device="mobile"]  .device button[data-device="mobile"]{color:#08251a;}
+  .device button:focus-visible{outline:2px solid #88f4c5;outline-offset:3px;}
+
+  .device-note{
+    color:#6b7785;font-size:.78rem;line-height:1.5;
+    max-width:34ch;margin-top:-12px;
+  }
 
   .links{
     display:flex;flex-direction:column;gap:14px;
@@ -41,7 +88,11 @@
     transition:transform .15s ease, box-shadow .15s ease;
     -webkit-tap-highlight-color:transparent;
   }
-  .links a:hover{transform:translateY(-2px);box-shadow:0 16px 30px -10px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.7);}
+  /* :hover ค้างหลังแตะบน iOS — เมาส์เท่านั้นที่ควรได้เอฟเฟกต์ยกขึ้น
+     :active ยังทำงานทั้งสองแบบ นิ้วจึงยังได้ผลตอบกลับตอนกด */
+  @media (hover:hover){
+    .links a:hover{transform:translateY(-2px);box-shadow:0 16px 30px -10px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.7);}
+  }
   .links a:active{transform:scale(.97);}
 
   footer{
@@ -61,6 +112,13 @@
   <h1>Interactive Math</h1>
   <p class="bio">กรุณาเลือก</p>
 
+  <div class="device" role="group" aria-label="เลือกอุปกรณ์ที่ใช้">
+    <button type="button" data-device="desktop">คอมพิวเตอร์</button>
+    <button type="button" data-device="mobile">มือถือ</button>
+  </div>
+  <p class="device-note">เลือกครั้งเดียวใช้ได้ทุกหน้า — โหมดมือถือจะจัดหน้าใหม่ให้แตะง่าย
+    และเพิ่มปุ่มแทนคีย์ลัดในเครื่องคิดเลขกับกระดานเรขาคณิต</p>
+
   <nav class="links">
     <a href="หน้าเว็บ/index.html">เว็บไซต์หลัก</a>
     <a href="เครื่องคิดเลข/เครื่องคิดเลข-บล็อก_2.html">เครื่องคิดเลขบล็อก</a>
@@ -72,5 +130,30 @@
 
   <footer> โรงเรียนเลยพิทยาคม</footer>
 
+<!-- หน้านี้ไม่โหลด assets/ อะไรเลยโดยตั้งใจ (เป็นหน้าเดียวจบ) จึงเขียน IM.setDevice
+     ฉบับย่อไว้ตรงนี้ ต่างจากของจริงใน หน้าเว็บ/assets/js/core.js ตรงที่ไม่ต้อง reload
+     เพราะหน้านี้ไม่มีโมดูลที่บูตตามโหมดไปแล้ว แค่เลื่อนแถบให้ตรงก็พอ -->
+<script>
+(function () {
+  var root = document.documentElement;
+
+  document.querySelector('.device').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-device]');
+    if (!btn) return;
+    var next = btn.dataset.device;
+    root.dataset.device = next;
+    try { localStorage.setItem('im-device', next); } catch (err) {}
+    syncPressed();
+  });
+
+  function syncPressed() {
+    var now = root.dataset.device;
+    document.querySelectorAll('.device button').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.dataset.device === now));
+    });
+  }
+  syncPressed();
+})();
+</script>
 </body>
 </html>

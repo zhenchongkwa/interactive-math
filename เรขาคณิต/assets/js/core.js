@@ -269,4 +269,29 @@
     }
   };
 
+  /* ---------- โหมดอุปกรณ์ (desktop/mobile) ----------
+     แพทเทิร์นเดียวกับธีมข้างบนทุกอย่าง ต่างกันที่ค่าเริ่มต้นเดาจากอุปกรณ์ให้ก่อน
+     แล้วผู้ใช้เลือกทับได้ที่หน้ารวมลิงก์ เลือกแล้วจำไว้ใช้ทุกหน้า
+
+     ค่าถูกตั้งโดย inline script ใน <head> ของทุกหน้า ซึ่งต้องรันก่อน CSS โหลด
+     ไม่งั้นมือถือจะเห็นเลย์เอาต์คอมวาบขึ้นมาก่อนหนึ่งเฟรม ที่นี่แค่ "อ่าน"
+     ค่านั้นเหมือนที่ IM.theme ทำ ห้ามให้ core.js เป็นคนตัดสินใจเอง
+
+     กฎ CSS ของโหมดมือถือทุกข้อ key จาก [data-device="mobile"] ไม่ใช่ @media
+     โหมดคอมจึงไม่ match กฎใหม่สักข้อ — ได้หน้าตาเดิมเป๊ะไม่ว่าจอจะแคบแค่ไหน
+     และคนที่เปิดบนมือถือแต่เลือก "คอมพิวเตอร์" ก็ได้ของเดิมจริงๆ ไม่ใช่ของครึ่งๆ */
+
+  IM.device = document.documentElement.dataset.device === 'mobile' ? 'mobile' : 'desktop';
+  IM.isMobile = IM.device === 'mobile';
+
+  IM.setDevice = function (next) {
+    if (next !== 'mobile' && next !== 'desktop') return;
+    try { localStorage.setItem('im-device', next); } catch (e) {}
+    if (next === IM.device) return;
+    /* โหลดใหม่แทนการสลับสด: โมดูลตัดสินใจว่าจะ subscribe ticker ไหมตอนบูตครั้งเดียว
+       และ script.js/app.js ผูก listener ตามโหมดไปแล้ว การถอดทุกอย่างกลับกลางคัน
+       มีทางพลาดมากกว่าที่ได้ — reload คือทางที่ถูกเสมอ */
+    w.location.reload();
+  };
+
 })(window);

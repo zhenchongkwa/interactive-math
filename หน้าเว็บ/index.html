@@ -9,6 +9,11 @@
      ก่อนสลับเป็นขาว — synchronous ตรงๆ ไม่ต้องรอ DOMContentLoaded -->
 <script>(function(){try{if(localStorage.getItem('im-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
 
+<!-- โหมดอุปกรณ์: ต้องรันก่อน CSS ด้วยเหตุผลเดียวกับสคริปต์กันธีมวาบข้างบน ไม่งั้นมือถือ
+     จะเห็นเลย์เอาต์คอมวาบขึ้นมาก่อนหนึ่งเฟรม เดาจากอุปกรณ์ให้ก่อน แล้วผู้ใช้เลือกทับได้
+     ที่หน้ารวมลิงก์หรือปุ่มบนแถบนำทาง — ข้อความชุดนี้เหมือนกันทุกหน้า -->
+<script>(function(){var d=null;try{d=localStorage.getItem('im-device');}catch(e){}if(d!=='mobile'&&d!=='desktop')d=(matchMedia('(pointer:coarse)').matches||innerWidth<=820)?'mobile':'desktop';document.documentElement.dataset.device=d;})();</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -38,6 +43,12 @@
     </div>
     <div class="nav-cta">
       <a href="#lab" class="btn btn-outline magnetic" data-cursor="button" style="padding:11px 20px;font-size:.88rem;">ทดลองใน Math Lab</a>
+      <!-- โหมดอุปกรณ์: ที่เลือกจริงอยู่หน้ารวมลิงก์ ปุ่มนี้เป็นทางออกเผื่อเดาผิด
+           ไอคอนสลับด้วย CSS จาก [data-device] เหมือนคู่ sun/moon ข้างๆ -->
+      <button class="theme-toggle" id="deviceToggle" aria-pressed="false" aria-label="สลับเป็นโหมดมือถือ" data-cursor="button">
+        <svg class="i-monitor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.6" y="4" width="18.8" height="12.4" rx="1.8"/><path d="M9 20.4h6M12 16.4v4"/></svg>
+        <svg class="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.6" y="2.4" width="10.8" height="19.2" rx="2.4"/><path d="M10.6 5.4h2.8"/></svg>
+      </button>
       <button class="theme-toggle" id="themeToggle" aria-pressed="false" aria-label="สลับเป็นธีมสว่าง" data-cursor="button">
         <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/></svg>
         <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5z"/></svg>
@@ -285,6 +296,7 @@
      ============================================ -->
 <script src="assets/js/core.js"></script>
 <script src="assets/js/theme.js"></script>
+<script src="assets/js/device.js"></script>
 <script src="assets/js/scroll.js"></script>
 <script src="assets/js/cursor.js"></script>
 <script src="assets/js/field.js"></script>
