@@ -89,16 +89,10 @@
     </div>
   </div>
 
+  <!-- ลำดับ อุปกรณ์ → ธีม → วิธีใช้ ตรงกับสามปุ่มมุมขวาของหน้าเครื่องคิดเลข
+       (slate → lamp → gear ใน shortcuts.js) สองหน้าจึงมีของอยู่ตำแหน่งเดียวกัน
+       ไม่ต้องมองหาใหม่ตอนสลับหน้า วิธีใช้อยู่ท้ายสุดชิดขอบเหมือนกันทั้งคู่ -->
   <div class="geo-actions">
-    <button type="button" id="geoHelpOpen" class="theme-toggle" aria-label="ดูปุ่มลัดทั้งหมด">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <circle cx="12" cy="12" r="9.2"/>
-        <path d="M9.2 9.3a2.9 2.9 0 1 1 3.7 3.1c-.6.2-.9.7-.9 1.3v.6"/>
-        <path d="M12 17.4h.01"/>
-      </svg>
-    </button>
-
     <!-- โหมดอุปกรณ์: ที่เลือกจริงอยู่หน้ารวมลิงก์ ปุ่มนี้เป็นทางออกเผื่อเดาผิด
          คู่ไอคอนจอ/มือถือสลับด้วย CSS จาก [data-device] เหมือนคู่ sun/moon ข้างล่าง -->
     <button type="button" id="deviceToggle" class="theme-toggle"
@@ -126,6 +120,15 @@
       <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M20.5 14.2A8.6 8.6 0 0 1 9.8 3.5a8.6 8.6 0 1 0 10.7 10.7Z"/>
+      </svg>
+    </button>
+
+    <button type="button" id="geoHelpOpen" class="theme-toggle" aria-label="ดูปุ่มลัดทั้งหมด">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9.2"/>
+        <path d="M9.2 9.3a2.9 2.9 0 1 1 3.7 3.1c-.6.2-.9.7-.9 1.3v.6"/>
+        <path d="M12 17.4h.01"/>
       </svg>
     </button>
   </div>

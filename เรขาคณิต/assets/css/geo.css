@@ -158,10 +158,13 @@ input{-webkit-user-select:text;user-select:text;}
    3. แถบบน — ป้ายชื่อ + ปุ่ม
    ============================================ */
 
+/* ระยะจากขอบ 18px เท่ากับที่หน้าเครื่องคิดเลขปักปุ่มมุมไว้ (.back-home กับ .gear ที่ 18/18)
+   สองหน้าจึงวางของไว้ที่เดียวกัน สลับหน้าแล้วไม่ต้องมองหาใหม่
+   padding นี้คุมทั้งสองฝั่งของแถบ ปุ่มกลับหน้าหลักฝั่งซ้ายจึงขยับมาตรงกันด้วย */
 .geo-bar{
   position:fixed;top:0;left:0;right:0;z-index:40;
   display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
-  padding:14px 16px;
+  padding:18px;
   /* แถบเป็นแค่โครงวางตำแหน่ง ห้ามกินคลิกที่ควรตกถึงกระดาษ
      ลูกๆ ข้างในเปิด pointer-events กลับมาเอง */
   pointer-events:none;
@@ -224,12 +227,17 @@ input{-webkit-user-select:text;user-select:text;}
 }
 .back-home svg{display:block;width:16px;height:16px;}
 
-.geo-actions{display:flex;align-items:center;gap:9px;}
+/* 44px และช่องไฟ 8px เท่ากับสามปุ่มมุมขวาของหน้าเครื่องคิดเลขเป๊ะ
+   (.gear ที่ 44px และระยะห่าง 8px จาก right:calc(18px + 44px + 8px) ใน style.css)
+   44 ยังเป็นเกณฑ์เป้าแตะที่โปรเจกต์ยึดไว้ทุกที่อยู่แล้ว */
+.geo-actions{display:flex;align-items:center;gap:8px;}
 
-/* .theme-toggle ของ layout.css เป็นแก้วขาว — ธีมสว่างจะหายไปทั้งปุ่ม
-   จึงเปลี่ยนมาใช้วัสดุ chrome ชุดเดียวกับแถบเครื่องมือ (ธีมมืดได้ผลเหมือนเดิม) */
+/* วัสดุยังเป็น chrome ไม่ใช่แก้วแบบเครื่องคิดเลข และห้ามเปลี่ยนตาม:
+   .theme-toggle ของ layout.css เป็นแก้วขาว ซึ่งหน้านี้ default เป็นธีมสว่าง (กระดาษต้องขาว)
+   แก้วขาวบนกระดาษขาวจะหายไปทั้งปุ่ม — เป็นบั๊กที่แก้ไปแล้ว ลอกวัสดุมาจะพากลับมาใหม่
+   ที่ตรงกับเครื่องคิดเลขได้คือเลย์เอาต์ (ขนาด ช่องไฟ ลำดับ ระยะขอบ) ไม่ใช่พื้นผิว */
 .geo-actions .theme-toggle{
-  width:42px;height:42px;
+  width:44px;height:44px;
   color:var(--chrome-ink);
   background:var(--chrome-bg);
   border:1px solid var(--chrome-line);
@@ -588,14 +596,17 @@ input{-webkit-user-select:text;user-select:text;}
    ============================================ */
 
 @media (max-width:560px){
-  .geo-bar{padding:10px;}
+  /* ระยะขอบแถบไม่บีบตามจอแล้ว คงไว้ที่ 18px เหมือนหน้าเครื่องคิดเลขซึ่งไม่มี media query
+     ตรงนี้เลย (บีบเมื่อเข้าโหมดมือถือเท่านั้น) ของเดิม 10px ตั้งไว้ตอนปุ่มยังเล็กกว่านี้
+     วัดแล้วฝั่งซ้าย+ขวารวมกัน 263px ยังพอดีกรอบ 284px ของจอ 320px ที่ระยะขอบ 18px */
   .geo-title,.geo-brand .eyebrow{display:none;}
   .geo-brand{padding:7px;}
   /* ป้ายชื่อเหลือแค่โลโก้แล้ว ปุ่มกลับก็เหลือแค่ลูกศรด้วย ไม่งั้นแถบล้น */
   .geo-left{gap:7px;}
   .back-home{padding:9px;gap:0;}
   .bh-label{display:none;}
-  .geo-actions .theme-toggle{width:38px;height:38px;}
+  /* ปุ่มมุมขวาไม่หดตามจอแล้ว — เครื่องคิดเลขคง 44px ทุกความกว้าง และ 38px ก็ต่ำกว่า
+     เกณฑ์เป้าแตะที่โปรเจกต์ยึดไว้อยู่แล้ว ที่ยอมให้หดคือฝั่งซ้าย (ป้ายปุ่มกลับหายไป) */
   .toolbar{bottom:16px;gap:4px;padding:7px 8px;}
   .tool{width:40px;height:40px;}
   .geo-hint{
@@ -752,9 +763,10 @@ input{-webkit-user-select:text;user-select:text;}
   width:92px;height:40px;font-size:16px;
 }
 
-/* ปุ่มมุมขวาบนสามปุ่มเรียงกันที่ 38px แคบเกินไปสำหรับนิ้ว */
-:root[data-device="mobile"] .geo-actions .theme-toggle{width:44px;height:44px;}
-:root[data-device="mobile"] .geo-actions{gap:7px;}
+/* ระยะขอบกับช่องไฟบีบลงในโหมดมือถือ ตรงกับที่หน้าเครื่องคิดเลขทำ (12px และ 6px)
+   ขนาดปุ่มไม่ต้องเขียนแล้ว เพราะ 44px เป็นค่าตั้งต้นทุกความกว้างไปแล้ว */
+:root[data-device="mobile"] .geo-bar{padding:12px;}
+:root[data-device="mobile"] .geo-actions{gap:6px;}
 
 
 /* ============================================
