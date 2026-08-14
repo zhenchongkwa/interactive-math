@@ -382,7 +382,10 @@ input{-webkit-user-select:text;user-select:text;}
 
    .axis-btn ไม่ได้ใช้คลาส .tool จึงไม่ได้รับสไตล์ปุ่มในกล่องตัวเลือกมาเอง
    ต้องเขียนซ้ำให้เป็นวัสดุชุดเดียวกัน ไม่งั้นจะเป็นปุ่มเทาของเบราว์เซอร์โผล่กลางแผงแก้ว */
-.scale-row{display:flex;align-items:center;gap:6px;}
+/* .resize-row ใช้กฎเดียวกัน: ช่องกรอกกับปุ่มสั่งขยายต้องอยู่แถวเดียวกัน
+   บนเดสก์ท็อปปุ่มถูกซ่อน แถวจึงเหลือแค่ช่องกรอก หน้าตาเท่าเดิมทุกพิกเซล */
+.scale-row,
+.resize-row{display:flex;align-items:center;gap:6px;}
 
 .axis-btn{
   width:42px;height:42px;
@@ -614,20 +617,40 @@ input{-webkit-user-select:text;user-select:text;}
    ทันทีทั้งที่ยังเป็นนิ้วเหมือนเดิม และคนที่เลือก "คอมพิวเตอร์" ต้องได้ของเดิมเป๊ะ
    ============================================ */
 
-/* แถบเครื่องมือค้างเต็มความชัดเสมอ (app.js ใส่ .show ให้ค้างไว้แล้ว) และเลื่อนแนวนอนได้
-   เผื่อจอแคบกว่าปุ่มทั้งแถว — ของเดิมล้นแล้วโดนตัดหายเงียบๆ */
+/* แถบเครื่องมือค้างเต็มความชัดเสมอ (app.js ใส่ .show ให้ค้างไว้แล้ว) และห่อลงบรรทัดใหม่
+   เผื่อจอแคบกว่าปุ่มทั้งแถว — ของเดิมล้นแล้วโดนตัดหายเงียบๆ
+
+   ห้ามใช้ overflow-x:auto ที่นี่เด็ดขาด แม้จะเขียน overflow-y:visible กำกับไว้ก็ตาม:
+   สเปก CSS บังคับว่าถ้าแกนหนึ่งไม่ใช่ visible อีกแกนที่เขียน visible จะถูกคำนวณเป็น auto
+   ตามไปด้วย แถบจึงกลายเป็นตัวตัดทั้งสองแกน แล้วกล่อง .tool-options ที่กางขึ้น "เหนือ"
+   แถบ (bottom:calc(100% + 10px)) จะถูกตัดหายทั้งใบ — ช่องกรอกของเครื่องมือแบ่งด้าน
+   กับเครื่องมือขยายเลยแตะไม่โดนมาตลอดในโหมดมือถือ
+   flex-wrap ให้ผลที่ต้องการเหมือนกัน (ไม่มีปุ่มไหนหายไป) โดยไม่สร้างตัวตัด
+   ของจริงกว้างราว 226px ซึ่งพอดีอยู่แล้วแม้บนจอ 320px จึงแทบไม่ได้ห่อจริง */
 :root[data-device="mobile"] .toolbar{
   bottom:calc(16px + env(safe-area-inset-bottom, 0px));
   max-width:calc(100vw - 24px);
-  overflow-x:auto;
-  overflow-y:visible;
-  scrollbar-width:none;
+  flex-wrap:wrap;
+  justify-content:center;
+  /* สูงกว่าแถบปุ่มโหมด (31) — กล่องตัวเลือกกางขึ้นไปทับพื้นที่ของแถบโหมดพอดี
+     ถ้าต่ำกว่าจะจมหายไปข้างหลังตอนกำลังจางออก */
+  z-index:32;
   backdrop-filter:none;                /* ฟิล์มเบลอเต็มแถบเป็นงานหนักบนเครื่องกลางๆ */
   -webkit-backdrop-filter:none;
   background:var(--chrome-solid);
 }
-:root[data-device="mobile"] .toolbar::-webkit-scrollbar{display:none;}
 :root[data-device="mobile"] .tool{width:44px;height:44px;flex:none;}
+
+/* ช่องกรอกต้องไม่ต่ำกว่า 16px ไม่งั้น iOS Safari ซูมทั้งหน้าเข้ามาตอนโฟกัส
+   แล้วผู้ใช้ต้องถอยออกเองทุกครั้ง — เหตุผลเดียวกับ .value-input ข้างล่าง */
+:root[data-device="mobile"] .tool-num{font-size:16px;}
+
+/* ปุ่มสั่งขยาย — มีเฉพาะโหมดมือถือ
+   เครื่องมือนี้สั่งงานด้วย Enter อย่างเดียวมาตลอด ซึ่งนิ้วไม่มีปุ่มนั้น
+   ซ่อนบนเดสก์ท็อปเพื่อให้โหมดคอมเหมือนเดิมทุกพิกเซล (คู่เดียวกับ .hint-desk/.hint-touch)
+   สไตล์มาจาก .axis-btn ทั้งหมดแล้ว ที่นี่คุมแค่ว่าจะแสดงหรือไม่ */
+.resize-apply{display:none;}
+:root[data-device="mobile"] .resize-apply{display:flex;}
 
 /* กล่องตัวเลือกเปิดออกทางขวาจาก wrap ที่กด ซึ่งพ้นขอบจอเมื่อ wrap นั้นอยู่ขวาสุด
    ปักให้ชิดขอบซ้ายของแถบแทน แล้วจำกัดความกว้างไว้ไม่ให้เกินจอ */
@@ -644,8 +667,22 @@ input{-webkit-user-select:text;user-select:text;}
   z-index:31;
   display:flex;flex-direction:column;gap:6px;align-items:center;
   max-width:calc(100vw - 16px);
+  transition:opacity .24s var(--ease-out), visibility 0s linear 0s;
 }
 .geo-modes[hidden]{display:none;}
+
+/* กล่องตัวเลือกของเครื่องมือกางขึ้นมาลงที่แถบนี้พอดี ซ้อนกันแล้วอ่านไม่ออกและกดผิดตัว
+   จึงหลบให้ตอนเปิดเครื่องมือ (app.js ใส่ .geo-tool-open บน <html> ให้)
+   ทั้งคู่กินการแตะบนกระดาษคนละแบบอยู่แล้ว เปิดพร้อมกันจึงไม่มีความหมาย
+
+   ซ่อนด้วย visibility ไม่ใช่ display เพื่อให้จางออกได้ (แบบเดียวกับ .tool-options)
+   และ pointer-events:none กันนิ้วที่เล็งกล่องแล้วพลาดไปโดนปุ่มโหมดที่มองไม่เห็น */
+:root[data-device="mobile"].geo-tool-open .geo-modes{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition-delay:0s, .24s;
+}
 
 .gm-row{
   display:flex;align-items:center;gap:4px;

@@ -53,6 +53,12 @@
   var placeMode = false;                      // แตะกระดาษเพื่อวางจุด — แทนปุ่ม 1
   var onPhone   = !!(window.IM && window.IM.isMobile);
 
+  /* ปลดโหมดที่ค้างอยู่บนแถบปุ่มมือถือ ตัวจริงถูกใส่ให้ตอนผูกแถบท้ายไฟล์ (ซึ่งเป็นที่เดียว
+     ที่รู้จัก wearMode) ค่าเริ่มต้นเป็นฟังก์ชันเปล่า เพราะโหมดคอมไม่มีแถบนั้นให้ปลด
+     setTool ต้องเรียกตัวนี้: โหมด "วางจุด" ถูกเช็คก่อนสาขาของเครื่องมือใน pointerdown
+     ถ้าไม่ปลด เลือกเครื่องมือแบ่งด้านแล้วแตะเส้นจะได้จุดใหม่แทนการแบ่ง */
+  var clearTouchMode = function () {};
+
   function ctrlOn(e)  { return e.ctrlKey  || touchMods.ctrl; }
   function shiftOn(e) { return e.shiftKey || touchMods.shift; }
 
@@ -1462,15 +1468,21 @@
     return activeTool === 'bisect' || activeTool === 'shape';
   }
 
+  /* เครื่องมือกับโหมดบนแถบมือถือกินการแตะบนกระดาษคนละแบบ เปิดพร้อมกันไม่ได้
+     เดิมกันไว้ทางเดียว (เลือกโหมดแล้วปิดเครื่องมือ) แต่ขาขากลับไม่มี — เปิดเครื่องมือ
+     ทั้งที่โหมด "วางจุด" ยังค้างอยู่ แล้ว placeMode ที่ถูกเช็คก่อนใน pointerdown
+     จะกลืนการแตะไปหมด เครื่องมือแบ่งด้านเลยใช้ไม่ได้เลยบนมือถือ ปิดขากลับให้ครบที่นี่ */
   function setTool(name) {
     activeTool = (activeTool === name) ? null : name;   // กดซ้ำที่เดิม = ปิดเครื่องมือ
     if (activeTool !== 'shape') shapeKind = null;
+    if (activeTool) clearTouchMode();
     refreshToolButtons();
   }
 
   function setShapeKind(kind) {
     shapeKind = (shapeKind === kind) ? null : kind;     // กดซ้ำที่เดิม = ปิด
     activeTool = shapeKind ? 'shape' : null;
+    if (activeTool) clearTouchMode();
     refreshToolButtons();
   }
 
@@ -1488,6 +1500,9 @@
     toolbar.classList.toggle('bisect-open', activeTool === 'bisect');
     toolbar.classList.toggle('resize-open', activeTool === 'resize');
     toolbar.classList.toggle('scale-open', activeTool === 'scale');
+    /* ที่นี่ที่เดียวที่รู้ว่ากล่องตัวเลือกกางอยู่ไหม — geo.css ใช้ธงนี้หลบแถบปุ่มโหมด
+       ซึ่งกินพื้นที่เดียวกับที่กล่องกางขึ้นไปพอดี (แพทเทิร์นเดียวกับ geo-modal-open) */
+    document.documentElement.classList.toggle('geo-tool-open', !!activeTool);
     canvas.style.cursor = toolUsesCanvas() ? 'crosshair' : '';
     updateToolbar();
   }
@@ -1691,6 +1706,18 @@
         }
       });
       scaleInput.addEventListener('pointerdown', function (ev) { ev.stopPropagation(); });
+
+      /* ปุ่ม ✓ (โหมดมือถือเท่านั้น — geo.css ซ่อนบนเดสก์ท็อป)
+         เรียก applyResize ตัวเดียวกับที่ Enter เรียก ไม่มีตรรกะของตัวเอง
+         ไม่ blur ช่องกรอกหลังกด เพื่อให้กดซ้ำขยายต่อเนื่องได้เหมือนกด Enter รัวๆ */
+      var applyBtn = document.getElementById('resize-apply');
+      if (applyBtn) {
+        applyBtn.addEventListener('click', function (ev) {
+          ev.preventDefault();
+          applyResize(parseFloat(scaleInput.value));
+        });
+        applyBtn.addEventListener('pointerdown', function (ev) { ev.stopPropagation(); });
+      }
     }
 
     toolbar.addEventListener('pointerenter', function () { overToolbar = true; updateToolbar(); });
@@ -2455,6 +2482,12 @@
     };
     modeBar.addEventListener('click', syncGrids);
     window.addEventListener('keyup', syncGrids);
+
+    /* ให้ setTool ปลดโหมดที่ค้างอยู่ได้ (ประกาศตัวแปรไว้หัวไฟล์ ที่นี่คือที่เดียวที่รู้จัก
+       wearMode) เรียกด้วย null ตรงๆ ไม่ใช่ toggle จึงปลดเสมอไม่ว่าค้างโหมดไหนอยู่
+       ไม่วนกลับ: wearMode ตั้ง mode = null ก่อน เงื่อนไข if (mode) setTool(null) ข้างใน
+       จึงเป็นเท็จเสมอเมื่อถูกเรียกมาทางนี้ */
+    clearTouchMode = function () { wearMode(null); };
 
     modeBar.hidden = false;
     wearMode('place');            // เปิดมาให้วางจุดได้เลย ไม่ต้องเดาว่าต้องกดอะไรก่อน

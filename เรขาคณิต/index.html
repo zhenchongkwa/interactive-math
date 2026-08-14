@@ -134,8 +134,10 @@
       </svg>
     </button>
 
+    <!-- inputmode ให้มือถือเด้งแป้นตัวเลขแทนแป้นตัวอักษร (เดสก์ท็อปไม่สนใจ attribute นี้)
+         numeric = จำนวนเต็มล้วน ไม่มีจุดทศนิยมบนแป้น เพราะ bisectCount() ปัดเป็น int อยู่แล้ว -->
     <div class="tool-options bisect-options">
-      <input type="text" id="bisect-count" class="tool-num" value="1"
+      <input type="text" id="bisect-count" class="tool-num" value="1" inputmode="numeric"
              title="จำนวนจุดที่จะแบ่ง (1 = แบ่งครึ่ง, 2 = แบ่งสามส่วน)">
     </div>
   </div>
@@ -168,7 +170,7 @@
   <div class="tool-sep" aria-hidden="true"></div>
 
   <div class="tool-wrap">
-    <button type="button" class="tool" data-tool="resize" title="ขยาย/ย่อสิ่งที่เลือก — กรอกตัวคูณแล้วกด Enter">
+    <button type="button" class="tool" data-tool="resize" title="ขยาย/ย่อสิ่งที่เลือก — กรอกตัวคูณแล้วกด Enter หรือแตะ ✓">
       <svg viewBox="0 0 40 40" aria-hidden="true">
         <rect x="3" y="3" width="34" height="34" stroke-dasharray="4 3"/>
         <rect x="13" y="13" width="14" height="14"/>
@@ -179,9 +181,20 @@
       </svg>
     </button>
 
+    <!-- ปุ่ม ✓ มีเฉพาะโหมดมือถือ (geo.css ซ่อนบนเดสก์ท็อป) เครื่องมือนี้สั่งงานด้วย Enter
+         อย่างเดียวมาตลอด ซึ่งเป็นปุ่มที่นิ้วไม่มี — ปุ่มนี้เรียก applyResize ตัวเดียวกับที่
+         Enter เรียก ไม่ได้มีตรรกะของตัวเอง -->
     <div class="tool-options resize-options">
-      <input type="text" id="resize-scale" class="tool-num" value="1.5"
-             title="ตัวคูณ เช่น 1.5 = ขยาย 1.5 เท่า, 0.5 = ย่อครึ่ง (กด Enter เพื่อสั่ง)">
+      <div class="resize-row">
+        <input type="text" id="resize-scale" class="tool-num" value="1.5" inputmode="decimal"
+               title="ตัวคูณ เช่น 1.5 = ขยาย 1.5 เท่า, 0.5 = ย่อครึ่ง (กด Enter หรือแตะ ✓ เพื่อสั่ง)">
+        <button type="button" id="resize-apply" class="axis-btn resize-apply"
+                title="สั่งขยาย/ย่อตามตัวคูณที่กรอก" aria-label="สั่งขยายหรือย่อ">
+          <svg viewBox="0 0 40 40" aria-hidden="true">
+            <path d="M9 21 L17 29 L31 12"/>
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -202,7 +215,7 @@
             <path d="M10 8 L20 22 L30 8 M20 22 L20 33"/>
           </svg>
         </button>
-        <input type="text" id="scale-y" class="tool-num" value="2" title="ระยะห่างเส้นตั้ง (ซม)">
+        <input type="text" id="scale-y" class="tool-num" value="2" inputmode="decimal" title="ระยะห่างเส้นตั้ง (ซม)">
       </div>
       <div class="scale-row">
         <button type="button" class="axis-btn" data-grid="x" title="เส้นนอน (แกน X) — กดเปิด กดซ้ำปิด">
@@ -210,7 +223,7 @@
             <path d="M10 10 L30 30 M30 10 L10 30"/>
           </svg>
         </button>
-        <input type="text" id="scale-x" class="tool-num" value="2" title="ระยะห่างเส้นนอน (ซม)">
+        <input type="text" id="scale-x" class="tool-num" value="2" inputmode="decimal" title="ระยะห่างเส้นนอน (ซม)">
       </div>
     </div>
   </div>
@@ -485,6 +498,15 @@
         <div class="gk-row">
           <span class="gk-keys">ลากรูปร่าง</span>
           <span class="gk-desc">เลือกแบบแล้วลากบนที่ว่างเพื่อกำหนดขนาด</span>
+        </div>
+        <!-- สองแถวนี้มีเฉพาะฉบับนิ้ว: บนคีย์บอร์ดสั่งขยายด้วย Enter และโหมดพวกนี้ไม่มีอยู่จริง -->
+        <div class="gk-row">
+          <span class="gk-keys">ขยาย/ย่อ</span>
+          <span class="gk-desc">เลือกรูปก่อน แล้วกรอกตัวคูณ จากนั้นแตะ ✓ ข้างช่อง</span>
+        </div>
+        <div class="gk-row">
+          <span class="gk-keys">เปิดเครื่องมือ</span>
+          <span class="gk-desc">โหมดที่ค้างอยู่จะถูกปิดให้เอง แถบโหมดจึงหลบไปชั่วคราว</span>
         </div>
       </div>
 
