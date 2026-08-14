@@ -88,7 +88,13 @@
     <button class="equals" onclick="action('=')">=</button>
   </div>
 
-  <div class="letters" id="letters"></div>
+  <!-- ปุ่มนี้แทนที่กริดตัวอักษรที่เคยแสดงตลอดเวลา — shortcuts.js ผูก aria-expanded/hidden
+       ให้ตอน boot ถ้า shortcuts.js พังหรือโหลดไม่ทัน ปุ่มนี้จะไม่ทำอะไรเลย แต่ #letters
+       ด้านล่างไม่มี hidden ติดมาจาก HTML ตรงๆ จึงยังแสดงกริดตามปกติ ไม่ใช่ปุ่มตายที่ปิดถาวร -->
+  <button type="button" class="letters-toggle" id="lettersToggle"
+          aria-haspopup="true" aria-expanded="false" aria-controls="letters">ตัวแปร A–Z</button>
+  <div class="letters sheet" id="letters" role="dialog" aria-modal="false"
+       aria-label="ตัวแปร A ถึง Z" tabindex="-1"></div>
 </div>
 
 <div class="graph" id="graph" hidden></div>

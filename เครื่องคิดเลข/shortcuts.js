@@ -82,19 +82,30 @@
     return node;
   }
 
-  // The gear, drawn rather than written, so there is no icon font to load and nothing to
-  // go missing when the page is opened straight off the disk.
-  function gearIcon() {
-    var svg = svgNode('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none' });
-    var ring = svgNode('circle', { cx: 12, cy: 12, r: 3.2, stroke: 'currentColor', 'stroke-width': 1.6 });
-    var teeth = svgNode('path', {
-      d: 'M12 2.6v2.2M12 19.2v2.2M21.4 12h-2.2M4.8 12H2.6' +
-         'M18.6 5.4l-1.6 1.6M7 17l-1.6 1.6M18.6 18.6L17 17M7 7L5.4 5.4',
-      stroke: 'currentColor', 'stroke-width': 1.6, 'stroke-linecap': 'round'
-    });
-    svg.appendChild(ring);
-    svg.appendChild(teeth);
+  /* Every icon here is drawn rather than written, so there is no icon font to load and
+     nothing to go missing when the page is opened straight off the disk. The three below are
+     the same drawings the geometry page uses, down to the path data and the 2px stroke, so
+     the two tools read as one set.
+
+     What used to sit on the help button was called a gear but was drawn as a small circle
+     ringed with eight spokes — the same shape as the sun on the theme button beside it. At
+     20px the pair was indistinguishable. A "?" says what the button does and cannot be
+     mistaken for the one next to it. */
+  function helpIcon() {
+    var svg = strokeSvg();
+    svg.appendChild(svgNode('circle', { cx: 12, cy: 12, r: 9.2 }));
+    svg.appendChild(svgNode('path', { d: 'M9.2 9.3a2.9 2.9 0 1 1 3.7 3.1c-.6.2-.9.7-.9 1.3v.6' }));
+    svg.appendChild(svgNode('path', { d: 'M12 17.4h.01' }));
     return svg;
+  }
+
+  // The shell the three corner icons share: stroke, no fill, round ends.
+  function strokeSvg() {
+    return svgNode('svg', {
+      width: 19, height: 19, viewBox: '0 0 24 24', fill: 'none',
+      stroke: 'currentColor', 'stroke-width': 2,
+      'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+    });
   }
 
   function closeIcon() {
@@ -106,24 +117,23 @@
     return svg;
   }
 
-  // The sun and the moon are each drawn as what the press would give you, not as what you
-  // are in: standing in the dark, the button offers a sun.
+  // The sun and the moon are each drawn as what you are in, the same reading the rest of
+  // the site uses (theme.js keys the pair to [data-theme] in CSS): standing in the dark,
+  // the button shows a moon.
   function sunIcon() {
-    var svg = svgNode('svg', { width: 19, height: 19, viewBox: '0 0 24 24', fill: 'none' });
-    svg.appendChild(svgNode('circle', { cx: 12, cy: 12, r: 4.2, stroke: 'currentColor', 'stroke-width': 1.7 }));
+    var svg = strokeSvg();
+    svg.appendChild(svgNode('circle', { cx: 12, cy: 12, r: 4.2 }));
     svg.appendChild(svgNode('path', {
-      d: 'M12 2.4v2.4M12 19.2v2.4M21.6 12h-2.4M4.8 12H2.4' +
-         'M18.8 5.2l-1.7 1.7M6.9 17.1l-1.7 1.7M18.8 18.8l-1.7-1.7M6.9 6.9L5.2 5.2',
-      stroke: 'currentColor', 'stroke-width': 1.7, 'stroke-linecap': 'round'
+      d: 'M12 2v2.4M12 19.6V22M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7' +
+         'M2 12h2.4M19.6 12H22M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7'
     }));
     return svg;
   }
 
   function moonIcon() {
-    var svg = svgNode('svg', { width: 19, height: 19, viewBox: '0 0 24 24', fill: 'none' });
+    var svg = strokeSvg();
     svg.appendChild(svgNode('path', {
-      d: 'M20.5 14.2A8.6 8.6 0 0 1 9.8 3.5a8.6 8.6 0 1 0 10.7 10.7Z',
-      stroke: 'currentColor', 'stroke-width': 1.7, 'stroke-linejoin': 'round'
+      d: 'M20.5 14.2A8.6 8.6 0 0 1 9.8 3.5a8.6 8.6 0 1 0 10.7 10.7Z'
     }));
     return svg;
   }
@@ -140,7 +150,7 @@
   toggle.setAttribute('aria-expanded', 'false');
   toggle.setAttribute('aria-controls', 'shortcuts');
   toggle.dataset.cursor = '';            // the ring in cursor.js grows over anything marked so
-  toggle.appendChild(gearIcon());
+  toggle.appendChild(helpIcon());
 
   var panel = document.createElement('div');
   panel.className = 'sheet';
@@ -214,7 +224,7 @@
   function showTheme() {
     var dark = root.dataset.theme !== 'light';
     lamp.textContent = '';
-    lamp.appendChild(dark ? sunIcon() : moonIcon());
+    lamp.appendChild(dark ? moonIcon() : sunIcon());
     lamp.setAttribute('aria-label', dark ? 'สลับเป็นโหมดสว่าง' : 'สลับเป็นโหมดมืด');
     lamp.setAttribute('title', dark ? 'โหมดสว่าง' : 'โหมดมืด');
     lamp.setAttribute('aria-pressed', String(!dark));
@@ -260,6 +270,7 @@
 
   toggle.addEventListener('click', function (e) {
     e.stopPropagation();                 // ...or the document listener below would shut it again
+    showLetters(false);                  // the two cards share one corner; only one at a time
     show(!open);
   });
   shut.addEventListener('click', function () { show(false); });
@@ -274,6 +285,51 @@
   });
 
   panel.tabIndex = -1;
+
+  /* ---------- the letters drawer ----------
+     A–Z used to sit in the machine as a second keypad, on screen the whole time. It is
+     reached for far less than the digits (see .letters button in style.css), so it is folded
+     away behind its own toggle instead — the same show/hide/focus shape as the card above,
+     aimed at a different button and a different panel. The two share one corner, so opening
+     either closes the other rather than letting them stack. */
+
+  var lettersToggle = document.getElementById('lettersToggle');
+  var lettersPanel = document.getElementById('letters');
+  var lettersOpen = false;
+
+  function showLetters(next) {
+    if (!lettersToggle || !lettersPanel) return;
+    if (next === lettersOpen) return;
+    lettersOpen = next;
+    lettersPanel.hidden = !lettersOpen;
+    lettersToggle.setAttribute('aria-expanded', String(lettersOpen));
+    if (lettersOpen) lettersPanel.focus();
+    else lettersToggle.focus();
+  }
+
+  if (lettersToggle && lettersPanel) {
+    // Hidden from here, not from the HTML — if this script fails before reaching this line,
+    // the grid is left showing exactly as it always did, not stuck behind a toggle nothing
+    // can press.
+    lettersPanel.hidden = true;
+    lettersPanel.tabIndex = -1;
+
+    lettersToggle.addEventListener('click', function (e) {
+      e.stopPropagation();
+      show(false);
+      showLetters(!lettersOpen);
+    });
+
+    // Nothing stops propagation inside the panel, on purpose: picking a letter is meant to
+    // close the drawer behind it, the same as a click outside it would. script.js's own
+    // handler on the letter (bound directly to the button) runs first and writes it into the
+    // display; the click then bubbles up untouched to the document listener below, which
+    // closes the drawer after — one press both types the letter and puts the keypad away.
+    document.addEventListener('click', function () { showLetters(false); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && lettersOpen) showLetters(false);
+    });
+  }
 
   /* ---------- the ring says what the cursor used to ----------
      cursor.js hides the system cursor across the whole page with one rule in motion.css:

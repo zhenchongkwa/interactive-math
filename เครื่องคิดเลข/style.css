@@ -663,7 +663,26 @@ body {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 8px;
-  margin-top: 12px;
+}
+/* .letters sets its own display:grid above — an author rule — which beats the browser's
+   built-in [hidden]{display:none} (a user-agent rule) at equal specificity regardless of
+   source order. Author always wins over UA. Without this line the hidden attribute
+   .letters-toggle relies on would do nothing and the grid would stay visible. */
+.letters[hidden] {
+  display: none;
+}
+/* .sheet's own background is a very thin film on purpose — tokens.css notes the glass look
+   comes from the edge and the blur, not from the opacity of the ground (--glass-1/2/3 sit at
+   just .07-.20 alpha in the dark theme). That reads fine floating over the empty page, which
+   is all .sheet has ever floated over before. This panel floats directly over the keypad's
+   own glass buttons instead, and two thin films stacked on each other wash out into the keys
+   showing through rather than the letters — a panel that exists to be read needs its own,
+   more solid ground under it. */
+.letters.sheet {
+  background: linear-gradient(180deg, rgba(32, 40, 52, .96), rgba(20, 26, 35, .98));
+}
+:root[data-theme="light"] .letters.sheet {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .96), rgba(240, 244, 248, .97));
 }
 /* Thin glass, the same film the panel is made of but lighter, so a key reads as cut from
    the machine rather than laid on top of it.
@@ -721,6 +740,22 @@ button:active { transform: scale(.96); }
   border-color: rgba(255, 255, 255, .3);
   color: var(--ink);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .34);
+}
+
+/* Sits where the letter grid used to live: a single wide key, so opening it reads as
+   pulling a drawer out from the machine rather than a separate control bolted on. It is a
+   bare <button> otherwise, so it already carries the base glass-key look from the plain
+   `button` rule above without repeating any of it here. */
+.letters-toggle {
+  width: 100%;
+  margin-top: 12px;
+  font-size: 14px;
+}
+/* Held open, it takes the brand green — the same cue .gear-on uses for the shortcuts card. */
+.letters-toggle[aria-expanded="true"] {
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  color: var(--accent-ink);
+  border-color: transparent;
 }
 
 /* The one key that does something to the whole display rather than adding to it, so it is
