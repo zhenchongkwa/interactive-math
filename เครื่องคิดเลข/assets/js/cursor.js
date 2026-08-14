@@ -146,7 +146,8 @@
 
     function apply(ok) {
       // อุปกรณ์สัมผัสไม่มีเคอร์เซอร์ให้แทน และ magnetic ก็ไม่มีความหมาย
-      if (ok && !IM.isCoarse) enable();
+      // เช่นเดียวกับโหมดมือถือที่ผู้ใช้เลือกเอง — IM.mouseFx() รวมสองข้อนั้นไว้ (ดู core.js)
+      if (ok && IM.mouseFx()) enable();
       else disable();
     }
 

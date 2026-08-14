@@ -185,10 +185,14 @@
     var subscribed = false;
 
     function apply(ok) {
-      if (ok && !subscribed) {
+      /* IM.mouseFx() = มีเมาส์จริง และยังอยู่โหมดคอม (ดู core.js)
+         parallax ตามเมาส์ไม่มีความหมายบนนิ้ว และคลื่นที่ไหลอยู่ก็ประกอบสตริง path
+         ยาว 80 กว่าจุดใหม่ทุกเฟรมเพื่อการนั้น เฟรมนิ่งที่วาดไว้ตอนสร้างยังอยู่ครบ
+         งานศิลป์จึงไม่หายไปไหน แค่หยุดเคลื่อน */
+      if (ok && IM.mouseFx() && !subscribed) {
         IM.ticker.add(tick);
         subscribed = true;
-      } else if (!ok && subscribed) {
+      } else if ((!ok || !IM.mouseFx()) && subscribed) {
         IM.ticker.remove(tick);
         subscribed = false;
         for (var i = 0; i < layers.length; i++) layers[i].g.removeAttribute('transform');

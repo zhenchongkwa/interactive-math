@@ -257,6 +257,10 @@
   IM.device = document.documentElement.dataset.device === 'mobile' ? 'mobile' : 'desktop';
   IM.isMobile = IM.device === 'mobile';
 
+  /* เอฟเฟกต์ที่จ่ายค่าทุกเฟรมเพื่อสิ่งที่ต้องมีเมาส์ถึงจะได้กลับมา ควรทำงานเมื่อ
+     "มีเมาส์จริง และผู้ใช้ยังอยู่โหมดคอม" เท่านั้น สองเงื่อนไขนี้ต้องเช็คคู่กันเสมอ */
+  IM.mouseFx = function () { return !IM.isCoarse && IM.device !== 'mobile'; };
+
   IM.setDevice = function (next) {
     if (next !== 'mobile' && next !== 'desktop') return;
     try { localStorage.setItem('im-device', next); } catch (e) {}

@@ -264,3 +264,21 @@
   .vm-panel,.vm-backdrop{transition:none;}
   .lesson-play{transition:none;}
 }
+
+/* ---------- โหมดมือถือ ----------
+   key จาก [data-device="mobile"] ไม่ใช่ความกว้าง ด้วยเหตุผลเดียวกับใน layout.css:
+   โทรศัพท์แนวนอนกว้างเกิน 768px แต่ยังเป็นนิ้วอยู่ดี */
+:root[data-device="mobile"] .lesson-grid{grid-template-columns:1fr;}
+:root[data-device="mobile"] .tool-label{min-width:0;width:100%;}
+:root[data-device="mobile"] .video-modal{padding:0;}
+:root[data-device="mobile"] .vm-panel{border-radius:0;max-height:100vh;height:100%;}
+:root[data-device="mobile"] #videoStage{border-radius:0;}
+
+/* ปุ่มเล่นเดิมโผล่ตอน hover ซึ่งนิ้วไม่มี — ให้ค้างไว้เลย */
+:root[data-device="mobile"] .lesson-play{transform:scale(1);opacity:1;}
+
+/* ---------- เป้าแตะ ---------- */
+:root[data-device="mobile"] #lessonSearch{min-height:48px;font-size:1rem;}
+:root[data-device="mobile"] .chip{min-height:44px;padding:10px 18px;}
+:root[data-device="mobile"] .chip-bar{gap:10px;}
+:root[data-device="mobile"] .back-link{min-height:44px;}

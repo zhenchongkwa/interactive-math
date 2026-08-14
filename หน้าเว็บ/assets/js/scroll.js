@@ -84,9 +84,12 @@
     }
 
     // ปิด smooth scroll บน touch เสมอ — native momentum ให้ผลดีกว่ามาก
-    // และปิดเมื่อผู้ใช้ตั้งค่า reduced motion
-    enableSmooth(IM.motionOK && !IM.isCoarse);
-    IM.onMotionPrefChange(function (ok) { enableSmooth(ok && !IM.isCoarse); });
+    // ปิดเมื่อผู้ใช้ตั้งค่า reduced motion และปิดในโหมดมือถือด้วย (IM.mouseFx ดู core.js)
+    //
+    // เงื่อนไขตรงนี้ต้องเป็นชุดเดียวกับที่ใช้ตัดสินว่าจะต่อ ticker ไหมท้ายไฟล์ ห้ามแยกจากกัน:
+    // smoothOn เปิดแต่ไม่มี ticker มาขยับ currentY = หน้าเลื่อนไม่ได้เลยทั้งหน้า
+    enableSmooth(IM.motionOK && IM.mouseFx());
+    IM.onMotionPrefChange(function (ok) { enableSmooth(ok && IM.mouseFx()); });
 
     /* ---------------------------------------------
        2. ANCHOR LINKS
@@ -328,11 +331,19 @@
        7. subscribe เข้า ticker กลางตัวเดียว
        --------------------------------------------- */
 
-    IM.ticker.add(function (dt) {
-      tickScroll(dt);
-      tickParallax(dt);
-      tickGlass(dt);
-    });
+    /* โหมดมือถือไม่ต่อเลย ทั้งสามตัวไม่มีอะไรให้ทำ: tickScroll ถูกปิดไปพร้อม smooth scroll
+       ข้างบนแล้ว ส่วน parallax กับแสงที่ไล่ไปตามแถบนำทางเป็นของที่ต้องมีเมาส์ถึงจะเห็น
+       ต่อไว้ก็ได้แค่ rAF ที่วนเปล่าทุกเฟรม
+
+       header .scrolled มาจาก scroll listener จริง และ scrollspy ใช้ IntersectionObserver
+       ทั้งคู่ไม่ได้พึ่ง ticker จึงยังทำงานครบในโหมดมือถือ */
+    if (IM.mouseFx()) {
+      IM.ticker.add(function (dt) {
+        tickScroll(dt);
+        tickParallax(dt);
+        tickGlass(dt);
+      });
+    }
 
     // เผื่อรูปหรือฟอนต์โหลดเสร็จทีหลังแล้วความสูงหน้าเปลี่ยน
     w.addEventListener('load', function () { measure(); measureParallax(); });

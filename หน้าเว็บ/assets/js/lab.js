@@ -10,6 +10,9 @@
    - ไม่มี curve morph / draw-on animation
    - ไม่มี 3D tilt บน .panel
    การเปลี่ยนแปลงเดียวคือห่อไว้ใน IM.register เพื่อให้ main.js เรียก
+   (บวกอีกหนึ่ง: ถอด height="auto" ออกจาก <svg> เพราะ SVG ไม่รับคำว่า auto
+   เบราว์เซอร์จึงโยน error ลง console ทุกครั้งที่วาดกราฟ — width:100% กับ viewBox
+   ให้สัดส่วนเดียวกันอยู่แล้ว ภาพจึงเท่าเดิมทุกพิกเซล)
    ============================================ */
 (function (w) {
   'use strict';
@@ -124,7 +127,7 @@
       const cfg = FUNCS[currentType], params = currentParams[currentType], dom = cfg.domain;
       const d = buildPath(currentType, params);
       document.getElementById('graphBox').innerHTML = `
-  <svg viewBox="0 0 ${GW} ${GH}" width="100%" height="auto">
+  <svg viewBox="0 0 ${GW} ${GH}" width="100%">
     ${gridLines(dom)}
     <path id="fnPath" d="${d}" fill="none" stroke="${cfg.dotColor}" stroke-width="2.6" stroke-linecap="round"/>
     <circle r="6" fill="${cfg.dotColor}">

@@ -423,6 +423,82 @@ footer .logo{color:#fff;}
 }
 
 /* ============================================
+   โหมดมือถือ
+
+   key จาก [data-device="mobile"] ไม่ใช่ @media โดยตั้งใจ ด้วยเหตุผลสองข้อ:
+
+   1. โทรศัพท์ที่หมุนเป็นแนวนอนกว้างเกิน 920px ทันที เลย์เอาต์คอมจะเด้งกลับมา
+      ทั้งที่ยังเป็นนิ้วเหมือนเดิม กฎชุดนี้จึงต้องไม่ผูกกับความกว้าง
+   2. ผู้ใช้ที่เลือก "คอมพิวเตอร์" ต้องได้ของเดิมเป๊ะ ต่อให้ย่อหน้าต่างจนแคบแค่ไหน
+      กฎในบล็อกนี้ไม่ match ให้เขาสักข้อ
+
+   จึงต้องบังคับกฎของ breakpoint 920/560 ข้างบนซ้ำอีกรอบตรงนี้ ไม่ใช่พึ่งว่าจอแคบพอ
+   ============================================ */
+
+:root[data-device="mobile"] .hero-grid,
+:root[data-device="mobile"] .contact-grid,
+:root[data-device="mobile"] .topic-grid,
+:root[data-device="mobile"] .about-grid,
+:root[data-device="mobile"] .lab-grid{grid-template-columns:1fr;}
+:root[data-device="mobile"] .hero-art{order:-1;max-width:380px;margin:0 auto;}
+:root[data-device="mobile"] .nav-links{display:none;}
+:root[data-device="mobile"] .nav-links.open{display:flex;}
+:root[data-device="mobile"] .menu-btn{display:block;}
+:root[data-device="mobile"] .nav-cta .btn-outline{display:none;}
+:root[data-device="mobile"] .wrap{padding:0 20px;}
+:root[data-device="mobile"] nav{padding:14px 20px;}
+:root[data-device="mobile"] section{padding:68px 0;}
+
+/* หัวเรื่อง hero คิดจาก vw ซึ่งบนแนวนอนของโทรศัพท์จะพองจนล้น — ตรึงเพดานไว้ */
+:root[data-device="mobile"] .hero h1{font-size:clamp(2.1rem,8vw,3rem);}
+:root[data-device="mobile"] .hero p.lead{font-size:1rem;}
+:root[data-device="mobile"] .section-head{margin-bottom:36px;}
+:root[data-device="mobile"] .hero-stats{gap:24px;flex-wrap:wrap;}
+
+/* ---------- เป้าแตะ ----------
+   นิ้วต้องการอย่างน้อย 44px ทุกด้าน ปุ่มเหล่านี้เดิมสูงราว 34-40px */
+:root[data-device="mobile"] .btn{min-height:48px;padding:14px 24px;}
+:root[data-device="mobile"] .theme-toggle{width:44px;height:44px;}
+:root[data-device="mobile"] .menu-btn{padding:11px;}
+:root[data-device="mobile"] .nav-links.open a{padding:14px 16px;min-height:48px;display:flex;align-items:center;}
+:root[data-device="mobile"] .footer-links a{padding:10px 14px;}
+:root[data-device="mobile"] .func-item{min-height:48px;}
+
+/* slider ของ Math Lab: ราง 5px กับหัวจับ 18px เล็กเกินกว่าจะจิ้มโดนด้วยนิ้ว
+   ขยายรางเพื่อให้ "แถบที่แตะได้" กว้างขึ้น ไม่ใช่แค่ตัวหัวจับ */
+:root[data-device="mobile"] input[type=range]{height:10px;border-radius:6px;}
+:root[data-device="mobile"] input[type=range]::-webkit-slider-thumb{width:28px;height:28px;}
+:root[data-device="mobile"] input[type=range]::-moz-range-thumb{width:28px;height:28px;}
+:root[data-device="mobile"] .slider-group{margin-bottom:26px;}
+
+/* ---------- น้ำหนักการวาด ----------
+   การ์ดแก้วหกใบซ้อน backdrop-filter พร้อมกันเป็นงานหนักจริงบน Android ระดับกลาง
+   และเป็นเอฟเฟกต์ที่มองแทบไม่ออกบนจอเล็ก — ทิ้งฟิล์มเบลอ เก็บไล่เฉดกับขอบสว่างไว้
+   หน้าตาจึงยังเป็นการ์ดชุดเดิม */
+:root[data-device="mobile"] .topic-card,
+:root[data-device="mobile"] .about-card,
+:root[data-device="mobile"] .c-card,
+:root[data-device="mobile"] .panel,
+:root[data-device="mobile"] .nav-links.open{
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+}
+:root[data-device="mobile"] .panel{padding:20px;}
+
+/* tilt.js ไม่ subscribe ticker ในโหมดนี้อยู่แล้ว (ดู core.js → IM.mouseFx)
+   แต่ perspective ที่ .tilt-scene ตั้งไว้ยังสร้าง stacking context เปล่าๆ อยู่ */
+:root[data-device="mobile"] .tilt-scene{perspective:none;}
+:root[data-device="mobile"] .tilt{transform:none !important;}
+
+/* หน้าต่างเลือกเครื่องมือ: เต็มความกว้าง เลื่อนอ่านได้ แบบเดียวกับ breakpoint 560 */
+:root[data-device="mobile"] .tm-grid{grid-template-columns:1fr;}
+:root[data-device="mobile"] .tool-modal{padding:0;}
+:root[data-device="mobile"] .tm-panel{
+  border-radius:0;max-height:100vh;height:100%;
+  padding:64px 20px 24px;overflow-y:auto;
+}
+
+/* ============================================
    หน้าต่างเลือกเครื่องมือ (tool chooser)
 
    โครงเดียวกับหน้าต่างวิดีโอใน lessons.css เป๊ะ แต่ต้องเป็นคนละคลาส

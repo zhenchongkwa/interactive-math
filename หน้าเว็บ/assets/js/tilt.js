@@ -102,11 +102,13 @@
     var subscribed = false;
 
     function apply(ok) {
-      if (ok && !IM.isCoarse && !subscribed) {
+      // IM.mouseFx() = มีเมาส์จริง และยังอยู่โหมดคอม (ดู core.js)
+      // นี่คือ "การ์ดหมุนตามเมาส์" ซึ่งบนจอสัมผัสไม่มีอะไรให้หมุนตาม
+      if (ok && IM.mouseFx() && !subscribed) {
         measure();
         IM.ticker.add(tick);
         subscribed = true;
-      } else if ((!ok || IM.isCoarse) && subscribed) {
+      } else if ((!ok || !IM.mouseFx()) && subscribed) {
         IM.ticker.remove(tick);
         subscribed = false;
         for (var i = 0; i < cards.length; i++) {

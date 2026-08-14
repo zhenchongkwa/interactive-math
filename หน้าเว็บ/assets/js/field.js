@@ -207,11 +207,14 @@
     var subscribed = false;
 
     function apply(ok) {
-      if (ok && !subscribed) {
+      /* IM.mouseFx() = มีเมาส์จริง และยังอยู่โหมดคอม (ดู core.js)
+         อนุภาคผลักตัวหนีเมาส์ ซึ่งนิ้วไม่เคยได้เห็น เหลือแค่จุดลอยกับเส้นเชื่อมที่วาดใหม่
+         ทุกเฟรมด้วยการวนแบบ O(n²) — บนมือถือคือการเผาแบตเพื่อภาพที่ไม่มีใครได้ */
+      if (ok && IM.mouseFx() && !subscribed) {
         IM.ticker.add(tick);
         subscribed = true;
         canvas.classList.add('is-on');
-      } else if (!ok && subscribed) {
+      } else if ((!ok || !IM.mouseFx()) && subscribed) {
         IM.ticker.remove(tick);
         subscribed = false;
         canvas.classList.remove('is-on');
