@@ -1,0 +1,610 @@
+/* ============================================
+   geo.css — หน้าตาของเครื่องมือเรขาคณิต
+
+   ต่อยอดจาก tokens.css / layout.css ของเว็บแม่ ไม่มีสีลอยๆ สักตัว
+   ไฟล์นี้เพิ่มเฉพาะของที่ดีไซน์ระบบเดิมไม่มี:
+   กระดาษวาด, แถบเครื่องมือลอย, toast, ช่องกรอกค่า, ตารางปุ่มลัด
+
+   *** เรื่องธีมที่ต้องรู้ก่อนแก้ไฟล์นี้ ***
+   หน้านี้ default เป็น "สว่าง" (กระดาษต้องขาว) ซึ่งกลับกับเว็บแม่ที่
+   default เป็นมืด index.html จึงใส่ data-theme="light" ไว้ที่ <html>
+   ตั้งแต่ต้น แล้ว inline script ค่อยถอดออกถ้าเคยเลือกธีมมืดไว้
+   กฎในไฟล์นี้จึงเขียนคู่กันเสมอ: :root คือชุดมืด, [data-theme="light"] คือชุดสว่าง
+   ============================================ */
+
+
+/* ============================================
+   1. TOKEN ของแอปนี้
+
+   ทั้งหมดนี้ถูกอ่านจาก JS ด้วย getComputedStyle ใน app.js (readPalette)
+   สีบน canvas กับสีของ chrome จึงมาจากแหล่งเดียวกัน สลับธีมแล้วไปพร้อมกัน
+   ห้าม hardcode สีซ้ำใน app.js เด็ดขาด
+   ============================================ */
+
+:root{
+  /* ---------- กระดาษ (ธีมมืด) ----------
+     ไล่เฉดทแยงบางๆ ทิศเดียวกับพื้นหลังเว็บแม่ ไม่ใช่สีแบนๆ
+     เพราะกระดาษเต็มจอสีเดียวล้วนจะดูตายและทำให้ chrome แก้วไม่มีอะไรให้หักเห */
+  --paper:#161b23;
+  --paper-hi:#212832;          /* มุมบนซ้าย */
+  --paper-lo:#0f131a;          /* มุมล่างขวา */
+
+  --grid-minor:rgba(255,255,255,.05);
+  --grid-major:rgba(255,255,255,.11);
+
+  /* ---------- เส้นและจุดที่วาด ---------- */
+  --stroke:#e9eef6;
+  --face-hover:rgba(255,255,255,.07);
+
+  /* ---------- สีของสิ่งที่ถูกเลือก ----------
+     ใช้เขียวแบรนด์ตัวเดียวกับเว็บแม่แทนฟ้า #1a73e8 เดิม */
+  --accent-draw:#88f4c5;
+  --accent-fill:rgba(136,244,197,.17);
+  --accent-glow:rgba(136,244,197,.55);
+  --marquee-fill:rgba(136,244,197,.11);
+
+  --guide:rgba(233,238,246,.34);
+
+  /* ---------- ป้ายตัวเลขบน canvas ---------- */
+  --label-bg:rgba(16,20,27,.82);
+  --label-line:rgba(255,255,255,.16);
+
+  /* ฟอนต์ป้าย: ตัวเลขเป็น mono ให้ความกว้างนิ่ง ไม่กระตุกตอนค่าเปลี่ยนทุกเฟรม
+     ส่วน "ซม"/"ตร.ซม" ตกไปที่ฟอนต์ไทยตัวถัดไปในสายเอง */
+  --label-font:600 12px 'IBM Plex Mono','IBM Plex Sans Thai',system-ui,sans-serif;
+
+  /* ---------- วัสดุของ chrome ที่ลอยอยู่บนกระดาษ ----------
+     ธีมมืดใช้ฟิล์มแก้วชุดเดียวกับแถบเมนูเว็บแม่ได้ตรงๆ */
+  --chrome-bg:linear-gradient(180deg, var(--glass-1) 0%, var(--glass-2) 48%, var(--glass-3) 100%);
+  --chrome-line:rgba(255,255,255,.18);
+  --chrome-rim:inset 0 1px 0 rgba(255,255,255,.72), inset 0 0 0 1px rgba(255,255,255,.14),
+               inset 0 -16px 24px -16px rgba(255,255,255,.45);
+  --chrome-shadow:0 20px 46px -20px rgba(0,0,0,.62), 0 5px 16px -10px rgba(0,0,0,.45);
+  --chrome-hover:rgba(255,255,255,.13);
+  --chrome-press:rgba(255,255,255,.2);
+  --chrome-ink:var(--ink-soft);
+
+  --kbd-bg:rgba(255,255,255,.12);
+  --kbd-line:rgba(255,255,255,.2);
+  --kbd-shade:rgba(0,0,0,.28);
+}
+
+:root[data-theme="light"]{
+  /* ---------- กระดาษ (ธีมสว่าง) ----------
+     ขาวสนิทตรงกลาง แล้วหม่นลงนิดเดียวที่มุมล่างขวา พอให้ไม่แบน
+     แต่ยังอ่านว่า "กระดาษขาว" อยู่ */
+  --paper:#ffffff;
+  --paper-hi:#ffffff;
+  --paper-lo:#eef2f6;
+
+  --grid-minor:rgba(19,26,36,.055);
+  --grid-major:rgba(19,26,36,.13);
+
+  --stroke:#141a22;
+  --face-hover:rgba(19,26,36,.06);
+
+  --accent-draw:#0b7a4f;
+  --accent-fill:rgba(11,122,79,.13);
+  --accent-glow:rgba(11,122,79,.4);
+  --marquee-fill:rgba(11,122,79,.09);
+
+  --guide:rgba(20,26,34,.3);
+
+  --label-bg:rgba(255,255,255,.9);
+  --label-line:rgba(19,26,36,.16);
+
+  /* ฟิล์มแก้วขาวบนกระดาษขาวจะหายไปทั้งชิ้น (blur ไม่มีอะไรให้เบลอ ขอบขาวก็มองไม่เห็น)
+     ธีมสว่างจึงต้องเป็นแผ่นขาวทึบกว่า + เส้นขอบสีเข้ม + เงาจริง
+     ความ "ลอย" มาจากเงา ไม่ใช่จากความโปร่ง */
+  --chrome-bg:linear-gradient(180deg, rgba(255,255,255,.94), rgba(247,250,252,.88));
+  --chrome-line:rgba(19,26,36,.12);
+  --chrome-rim:inset 0 1px 0 rgba(255,255,255,.9), inset 0 0 0 1px rgba(19,26,36,.05);
+  --chrome-shadow:0 18px 40px -18px rgba(19,26,36,.3), 0 3px 10px -4px rgba(19,26,36,.14);
+  --chrome-hover:rgba(19,26,36,.06);
+  --chrome-press:rgba(19,26,36,.1);
+  --chrome-ink:var(--ink-soft);
+
+  --kbd-bg:rgba(19,26,36,.06);
+  --kbd-line:rgba(19,26,36,.14);
+  --kbd-shade:rgba(19,26,36,.16);
+}
+
+
+/* ============================================
+   2. โครงหน้า
+
+   หน้านี้ไม่มีการเลื่อน ทุกอย่างวางทับ canvas ที่เต็มจอ
+   ============================================ */
+
+html,body{
+  height:100%;
+  overflow:hidden;               /* ทับ overflow-x ของ tokens.css */
+  overscroll-behavior:none;
+}
+/* กันวาบสีตอน canvas ยังไม่ทันวาดเฟรมแรก
+   ต้องเขียนกฎธีมสว่างซ้ำอีกรอบ เพราะ tokens.css มี :root[data-theme="light"] body
+   ที่ specificity สูงกว่า body เปล่าๆ จะทับพื้นเราหายไป */
+body{
+  -webkit-user-select:none;
+  user-select:none;
+  background:var(--paper);
+  background-attachment:scroll;
+}
+:root[data-theme="light"] body{background:var(--paper);}
+/* ลายจุดพื้นหลังของเว็บแม่ถูกกระดาษทึบบังหมดอยู่แล้ว ปิดทิ้งไม่ให้เปลืองการวาด */
+body::before{display:none;}
+
+canvas#c{
+  display:block;
+  position:fixed;top:0;left:0;
+  z-index:1;
+  touch-action:none;
+}
+
+/* ทุกชิ้นของ chrome ห้ามให้ลากเลือกข้อความได้ จะกวนตอนลากสร้างรูป
+   ยกเว้นช่องกรอก — ต้องดับเบิลคลิกเลือกค่าเดิมทับได้ */
+.geo-bar,.toolbar,.notice,.geo-hint{-webkit-user-select:none;user-select:none;}
+input{-webkit-user-select:text;user-select:text;}
+
+
+/* ============================================
+   3. แถบบน — ป้ายชื่อ + ปุ่ม
+   ============================================ */
+
+.geo-bar{
+  position:fixed;top:0;left:0;right:0;z-index:40;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
+  padding:14px 16px;
+  /* แถบเป็นแค่โครงวางตำแหน่ง ห้ามกินคลิกที่ควรตกถึงกระดาษ
+     ลูกๆ ข้างในเปิด pointer-events กลับมาเอง */
+  pointer-events:none;
+}
+.geo-bar > *{pointer-events:auto;}
+
+.geo-brand{
+  display:flex;align-items:center;gap:11px;
+  padding:7px 16px 7px 7px;
+  border-radius:100px;
+  background:var(--chrome-bg);
+  border:1px solid var(--chrome-line);
+  box-shadow:var(--chrome-rim), var(--chrome-shadow);
+  backdrop-filter:blur(22px) saturate(170%);
+  -webkit-backdrop-filter:blur(22px) saturate(170%);
+}
+.geo-brand .logo-mark{width:30px;height:30px;border-radius:9px;}
+.geo-brand .logo-mark svg{width:17px;height:17px;}
+/* ธีมมืดใช้เขียวพาสเทลเป็นพื้นโลโก้ ไอคอนขาวจะจมหาย ต้องพลิกเป็นหมึกเข้ม */
+:root:not([data-theme="light"]) .geo-brand .logo-mark{color:#08251a;}
+
+.geo-title{
+  font-family:var(--display);font-weight:700;font-size:1.02rem;
+  letter-spacing:-.01em;line-height:1.2;color:var(--ink);
+}
+.geo-brand .eyebrow{
+  font-size:.63rem;padding:4px 10px;letter-spacing:.1em;
+  background:var(--chrome-hover);
+  border-color:var(--chrome-line);
+  box-shadow:none;
+}
+
+/* กล่องซ้ายของแถบ — ปุ่มกลับ + ป้ายชื่อ นับเป็นลูกตัวเดียวของ .geo-bar
+   ไม่งั้น space-between จะดันป้ายชื่อไปกลางแถบ */
+.geo-left{display:flex;align-items:center;gap:10px;}
+
+/* ทางกลับหน้าเว็บหลัก — หน้าตาเดียวกับ .back-home ของเครื่องคิดเลข
+   แต่ใช้วัสดุ chrome ชุดเดียวกับป้ายชื่อและปุ่มขวา ไม่ใช่แก้วขาวของ style.css ที่นั่น
+   ด้วยเหตุผลเดียวกับ .theme-toggle ข้างล่าง: หน้านี้ default เป็นธีมสว่าง
+   แก้วขาวจะจางหายไปทั้งปุ่มบนพื้นกระดาษขาว */
+.back-home{
+  display:flex;align-items:center;gap:7px;
+  padding:9px 15px 9px 12px;
+  border-radius:100px;
+  color:var(--chrome-ink);
+  background:var(--chrome-bg);
+  border:1px solid var(--chrome-line);
+  box-shadow:var(--chrome-rim), var(--chrome-shadow);
+  backdrop-filter:blur(22px) saturate(170%);
+  -webkit-backdrop-filter:blur(22px) saturate(170%);
+  font-family:var(--sans);font-size:.82rem;font-weight:600;
+  text-decoration:none;white-space:nowrap;
+  transition:color .25s var(--ease-out), background .25s var(--ease-out),
+             border-color .25s var(--ease-out);
+}
+.back-home:hover{
+  color:var(--ink);
+  background:var(--chrome-press);
+  border-color:var(--chrome-line);
+}
+.back-home svg{display:block;width:16px;height:16px;}
+
+.geo-actions{display:flex;align-items:center;gap:9px;}
+
+/* .theme-toggle ของ layout.css เป็นแก้วขาว — ธีมสว่างจะหายไปทั้งปุ่ม
+   จึงเปลี่ยนมาใช้วัสดุ chrome ชุดเดียวกับแถบเครื่องมือ (ธีมมืดได้ผลเหมือนเดิม) */
+.geo-actions .theme-toggle{
+  width:42px;height:42px;
+  color:var(--chrome-ink);
+  background:var(--chrome-bg);
+  border:1px solid var(--chrome-line);
+  box-shadow:var(--chrome-rim), var(--chrome-shadow);
+  backdrop-filter:blur(22px) saturate(170%);
+  -webkit-backdrop-filter:blur(22px) saturate(170%);
+  transition:color .25s var(--ease-out), background .25s var(--ease-out),
+             border-color .25s var(--ease-out);
+}
+.geo-actions .theme-toggle:hover{
+  color:var(--ink);
+  border-color:var(--chrome-line);
+  background:var(--chrome-press);
+}
+.geo-actions .theme-toggle svg{width:19px;height:19px;}
+
+
+/* ============================================
+   4. แถบเครื่องมือ
+
+   โผล่เมื่อกด Ctrl / เปิดเครื่องมืออยู่ / เมาส์อยู่บนแถบ
+   (app.js toggle คลาส .show ให้ — ไฟล์นี้แค่ตัดสินใจว่า "โผล่" หน้าตาเป็นยังไง)
+
+   สถานะพักไม่ใช่ display:none แต่เป็นการหรี่ลง เพื่อให้รู้ว่ามีเครื่องมืออยู่ตรงนี้
+   แคปซูลจึงต้องแคบเท่าปุ่มจริงๆ ไม่ใช่แถบเต็มความกว้างแบบเดิม
+   ไม่งั้นมันจะกินคลิกกลางกระดาษตลอดเวลา
+   ============================================ */
+
+.toolbar{
+  position:fixed;left:50%;bottom:26px;z-index:30;
+  display:flex;align-items:center;gap:6px;
+  padding:8px 10px;
+  border-radius:100px;
+  background:var(--chrome-bg);
+  border:1px solid var(--chrome-line);
+  box-shadow:var(--chrome-rim), var(--chrome-shadow);
+  backdrop-filter:blur(26px) saturate(180%);
+  -webkit-backdrop-filter:blur(26px) saturate(180%);
+
+  /* จางแค่ไหน: ต่ำกว่านี้ไอคอนเทาบนกระดาษขาวจะกลืนหายไปเลย ซึ่งเสียจุดประสงค์
+     ของการปล่อยให้ค้างไว้ (ให้รู้ว่ามีเครื่องมืออยู่) แต่ถ้าสูงกว่านี้จะแย่งสายตารูปที่วาด */
+  opacity:.42;
+  transform:translate(-50%,10px);
+  transition:opacity .38s var(--ease-out), transform .38s var(--ease-out);
+}
+/* ทุกกฎที่แตะ transform ต้องพา translateX(-50%) ไปด้วยเสมอ ไม่งั้นแถบเลื่อนหลุดกลาง */
+.toolbar.show,
+.toolbar:hover{opacity:1;transform:translate(-50%,0);}
+
+.tool-wrap{position:relative;display:flex;}
+
+.tool{
+  width:44px;height:44px;
+  padding:8px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--chrome-ink);
+  background:transparent;
+  border:1px solid transparent;
+  border-radius:50%;
+  cursor:pointer;
+  transition:background .22s var(--ease-out), color .22s var(--ease-out),
+             border-color .22s var(--ease-out);
+}
+.tool svg{display:block;width:100%;height:100%;}
+/* selector เดิมไล่ทีละ tag แล้วลืม path — ลูกศรมุมของไอคอน "ขยาย/ย่อ" จึงถูกเรนเดอร์
+   เป็นก้อนทึบสีดำ (ค่าเริ่มต้นของ SVG คือ fill:black) ใช้ * ครอบทีเดียวจบ */
+.tool svg *{
+  fill:none;
+  stroke:currentColor;
+  /* viewBox กว้าง 40 แต่ถูกย่อลงเหลือ ~28px ในปุ่ม เส้นจึงต้องหนากว่าค่าที่ตาเห็นจริง
+     3 ในระบบพิกัดของ svg ≈ 2.1px บนจอ ใกล้เคียงของเดิมที่ 2.5 ตอนไม่ถูกย่อ */
+  stroke-width:3;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.tool:hover{background:var(--chrome-hover);color:var(--ink);}
+.tool:active{background:var(--chrome-press);}
+.tool.active{
+  color:var(--green);
+  background:var(--chrome-press);
+  border-color:var(--green-line);
+}
+
+/* เส้นคั่นบางๆ ระหว่างกลุ่มเครื่องมือ */
+.tool-sep{
+  width:1px;height:26px;margin:0 3px;
+  background:var(--chrome-line);
+  flex:none;
+}
+
+/* ---------- กล่องตัวเลือกที่โผล่เหนือปุ่ม ---------- */
+.tool-options{
+  position:absolute;left:-1px;bottom:calc(100% + 10px);
+  display:flex;flex-direction:column;gap:6px;
+  padding:6px;
+  border-radius:22px;
+  background:var(--chrome-bg);
+  border:1px solid var(--chrome-line);
+  box-shadow:var(--chrome-rim), var(--chrome-shadow);
+  backdrop-filter:blur(26px) saturate(180%);
+  -webkit-backdrop-filter:blur(26px) saturate(180%);
+
+  /* ปิดด้วย visibility ไม่ใช่ display จะได้มี transition และไม่กินคลิกตอนปิด */
+  opacity:0;visibility:hidden;
+  transform:translateY(6px) scale(.96);
+  transform-origin:50% 100%;
+  transition:opacity .24s var(--ease-out), transform .24s var(--ease-out),
+             visibility 0s linear .24s;
+}
+.toolbar.shape-open  .shape-options,
+.toolbar.bisect-open .bisect-options,
+.toolbar.resize-open .resize-options,
+.toolbar.scale-open  .scale-options{
+  opacity:1;visibility:visible;
+  transform:none;
+  transition-delay:0s;
+}
+.tool-options .tool{
+  width:42px;height:42px;
+  padding:8px;
+  border-radius:14px;
+  background:var(--chrome-hover);
+  border-color:transparent;
+}
+.tool-options .tool:hover{background:var(--chrome-press);}
+.tool-options .tool.active{border-color:var(--green-line);}
+
+/* ---------- ช่องกรอกตัวเลขในกล่องตัวเลือก ---------- */
+.tool-num{
+  width:42px;height:42px;
+  padding:0;
+  font:600 15px var(--mono);
+  text-align:center;
+  color:var(--ink);
+  background:var(--chrome-hover);
+  border:1px solid transparent;
+  border-radius:14px;
+  outline:none;
+  transition:border-color .2s var(--ease-out), background .2s var(--ease-out);
+}
+.tool-num:focus{
+  background:var(--chrome-press);
+  border-color:var(--green);
+}
+
+/* ---------- แผงตั้งระยะห่างตาราง ----------
+   แผงนี้เป็นตัวเดียวที่วางเป็น "แถว" ไม่ใช่ปุ่มเรียงลงมาตรงๆ เพราะแต่ละแกน
+   มีของคู่กันสองชิ้น: สวิตช์เปิด/ปิดเส้น กับระยะห่างของเส้นนั้น
+   .tool-options เป็น column อยู่แล้ว จึงได้สองแถวซ้อนกัน (แกน Y บน แกน X ล่าง)
+
+   .axis-btn ไม่ได้ใช้คลาส .tool จึงไม่ได้รับสไตล์ปุ่มในกล่องตัวเลือกมาเอง
+   ต้องเขียนซ้ำให้เป็นวัสดุชุดเดียวกัน ไม่งั้นจะเป็นปุ่มเทาของเบราว์เซอร์โผล่กลางแผงแก้ว */
+.scale-row{display:flex;align-items:center;gap:6px;}
+
+.axis-btn{
+  width:42px;height:42px;
+  padding:9px;
+  flex:none;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--chrome-ink);
+  background:var(--chrome-hover);
+  border:1px solid transparent;
+  border-radius:14px;
+  cursor:pointer;
+  transition:background .22s var(--ease-out), color .22s var(--ease-out),
+             border-color .22s var(--ease-out);
+}
+.axis-btn svg{display:block;width:100%;height:100%;}
+.axis-btn svg *{
+  fill:none;
+  stroke:currentColor;
+  stroke-width:3;                /* เหตุผลเดียวกับ .tool svg * — viewBox 40 ถูกย่อลงเหลือ ~24px */
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.axis-btn:hover{background:var(--chrome-press);color:var(--ink);}
+/* .on = เส้นแกนนั้นเปิดอยู่ (app.js toggle ให้) ใช้สัญญาณเดียวกับ .tool.active
+   เพื่อให้ "เปิดอยู่" หน้าตาเหมือนกันทั้งแถบ */
+.axis-btn.on{
+  color:var(--green);
+  background:var(--chrome-press);
+  border-color:var(--green-line);
+}
+
+
+/* ============================================
+   5. กล่องกรอกค่า (โผล่ทับตัวเลขบน canvas)
+   ============================================ */
+
+.value-input{
+  position:fixed;z-index:20;
+  transform:translate(-50%,-50%);
+  width:78px;
+  padding:5px 8px;
+  font:600 12.5px var(--mono);
+  text-align:center;
+  color:var(--ink);
+  background:var(--chrome-bg);
+  border:1px solid var(--green);
+  border-radius:10px;
+  box-shadow:var(--chrome-shadow), 0 0 0 3px var(--accent-fill);
+  backdrop-filter:blur(14px) saturate(170%);
+  -webkit-backdrop-filter:blur(14px) saturate(170%);
+  outline:none;
+}
+
+
+/* ============================================
+   6. แถบข้อความเตือน
+   app.js toggle .show ให้ ที่นี่ทำแค่ให้มันเลื่อนลงมาแทนที่จะกระตุกโผล่
+   ============================================ */
+
+.notice{
+  position:fixed;top:76px;left:50%;z-index:45;
+  display:flex;align-items:center;gap:9px;
+  max-width:min(80%,520px);
+  padding:9px 18px;
+  font-size:.86rem;line-height:1.5;
+  color:var(--ink);
+  background:var(--chrome-bg);
+  border:1px solid var(--chrome-line);
+  border-radius:100px;
+  box-shadow:var(--chrome-rim), var(--chrome-shadow);
+  backdrop-filter:blur(22px) saturate(170%);
+  -webkit-backdrop-filter:blur(22px) saturate(170%);
+  pointer-events:none;
+
+  opacity:0;visibility:hidden;
+  transform:translate(-50%,-14px);
+  transition:opacity .3s var(--ease-out), transform .3s var(--ease-out),
+             visibility 0s linear .3s;
+}
+.notice::before{
+  content:'';
+  width:7px;height:7px;border-radius:50%;flex:none;
+  background:var(--green);
+  box-shadow:0 0 10px var(--accent-glow);
+}
+.notice.show{
+  opacity:1;visibility:visible;
+  transform:translate(-50%,0);
+  transition-delay:0s;
+}
+
+
+/* ============================================
+   7. ข้อความใบ้ตอนเปิดครั้งแรก
+   ============================================ */
+
+.geo-hint{
+  position:fixed;left:50%;bottom:100px;z-index:35;
+  transform:translateX(-50%);
+  display:flex;align-items:center;gap:8px;
+  padding:7px 16px;
+  font-size:.8rem;color:var(--ink-soft);
+  background:var(--chrome-bg);
+  border:1px solid var(--chrome-line);
+  border-radius:100px;
+  box-shadow:var(--chrome-shadow);
+  backdrop-filter:blur(18px) saturate(160%);
+  -webkit-backdrop-filter:blur(18px) saturate(160%);
+  pointer-events:none;
+  transition:opacity .5s var(--ease-out), transform .5s var(--ease-out);
+}
+.geo-hint kbd{
+  font:600 .72rem/1 var(--mono);
+  padding:2px 7px;border-radius:6px;
+  color:var(--ink);
+  background:var(--kbd-bg);
+  border:1px solid var(--kbd-line);
+}
+.geo-hint.is-gone{opacity:0;transform:translateX(-50%) translateY(8px);}
+.geo-hint[hidden]{display:none;}
+
+
+/* ============================================
+   8. หน้าต่างปุ่มลัด
+
+   ตัวกล่อง/ฉากหลัง/ปุ่มปิด ใช้ .tool-modal .tm-* ของ layout.css ทั้งดุ้น
+   ที่นี่เพิ่มแค่ตารางปุ่มลัด กับซ่อมธีมสว่างให้กล่องนั้น
+   ============================================ */
+
+/* ฉากหลังของ .tm-panel เป็นสีเข้มทั้งสองธีม ฟิล์มแก้วขาวบางๆ บนพื้นเข้ม
+   = แผงสีเข้ม แต่ธีมสว่าง --ink เป็นตัวหนังสือเกือบดำ → อ่านไม่ออก
+   ธีมสว่างจึงต้องพลิกแผงเป็นพื้นสว่างจริงๆ */
+:root[data-theme="light"] .tm-backdrop{background:rgba(16,22,30,.55);}
+:root[data-theme="light"] .tm-panel{
+  background:linear-gradient(180deg,#ffffff,#f3f6fa);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    inset 0 0 0 1px rgba(19,26,36,.09),
+    0 40px 90px -30px rgba(8,11,16,.5);
+}
+:root[data-theme="light"] .tm-close{
+  background:rgba(19,26,36,.06);
+  border-color:rgba(19,26,36,.12);
+}
+:root[data-theme="light"] .tm-close:hover{background:rgba(19,26,36,.12);}
+
+.tm-panel{width:min(680px,100%);}
+.tm-head .logo-mark{width:44px;height:44px;border-radius:13px;margin:0 auto;}
+.tm-head .logo-mark svg{width:24px;height:24px;}
+:root:not([data-theme="light"]) .tm-head .logo-mark{color:#08251a;}
+
+.geo-keys{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:10px 26px;
+}
+.gk-group{display:flex;flex-direction:column;gap:2px;}
+.gk-group h3{
+  font-family:var(--mono);font-size:.68rem;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:var(--green);
+  margin:14px 0 6px;
+}
+.gk-group:first-child h3,.gk-group:nth-child(2) h3{margin-top:0;}
+
+.gk-row{
+  display:flex;align-items:baseline;gap:10px;
+  padding:5px 0;
+  font-size:.87rem;color:var(--ink-soft);
+  border-top:1px solid var(--chrome-line);
+}
+.gk-group h3 + .gk-row{border-top:none;}
+.gk-keys{flex:none;display:flex;align-items:center;gap:3px;white-space:nowrap;}
+.gk-desc{flex:1;}
+.gk-keys .plus{color:var(--ink-faint);font-size:.75rem;}
+
+.geo-keys kbd{
+  display:inline-block;
+  min-width:24px;padding:3px 7px;
+  font:600 .72rem/1.25 var(--mono);
+  text-align:center;
+  color:var(--ink);
+  background:var(--kbd-bg);
+  border:1px solid var(--kbd-line);
+  border-radius:7px;
+  box-shadow:inset 0 -2px 0 var(--kbd-shade);
+}
+.gk-note{
+  margin-top:20px;padding-top:16px;
+  border-top:1px solid var(--chrome-line);
+  font-size:.82rem;color:var(--ink-faint);
+  text-align:center;
+}
+.gk-note b{color:var(--green);font-weight:600;}
+
+
+/* ============================================
+   9. จอแคบ
+   แอปนี้พึ่ง Ctrl/Shift/ปุ่มตัวเลขเป็นหลัก จึงเป็นงานของเมาส์+คีย์บอร์ด
+   ที่ทำตรงนี้คือ "ไม่ให้พัง" บนจอแคบ ไม่ใช่ออกแบบสำหรับสัมผัสใหม่
+   ============================================ */
+
+@media (max-width:560px){
+  .geo-bar{padding:10px;}
+  .geo-title,.geo-brand .eyebrow{display:none;}
+  .geo-brand{padding:7px;}
+  /* ป้ายชื่อเหลือแค่โลโก้แล้ว ปุ่มกลับก็เหลือแค่ลูกศรด้วย ไม่งั้นแถบล้น */
+  .geo-left{gap:7px;}
+  .back-home{padding:9px;gap:0;}
+  .bh-label{display:none;}
+  .geo-actions .theme-toggle{width:38px;height:38px;}
+  .toolbar{bottom:16px;gap:4px;padding:7px 8px;}
+  .tool{width:40px;height:40px;}
+  .geo-hint{
+    bottom:78px;font-size:.74rem;padding:6px 12px;
+    max-width:calc(100vw - 32px);text-align:center;
+  }
+  .geo-keys{grid-template-columns:1fr;}
+  .gk-group:nth-child(2) h3{margin-top:14px;}
+}
+
+
+/* ============================================
+   10. ลดการเคลื่อนไหว
+   motion.css คุมของเว็บแม่ไว้แล้ว ตรงนี้เก็บของที่เพิ่งเพิ่มในไฟล์นี้
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce){
+  .toolbar,.tool-options,.notice,.geo-hint,.tool,.axis-btn,.theme-toggle{
+    transition:none !important;
+  }
+  .toolbar{transform:translate(-50%,0) !important;}
+}

@@ -1,0 +1,219 @@
+/* ============================================
+   tokens.css — design tokens, reset, primitives
+
+   ธีมเทา-น้ำเงินเข้ม อ้างอิงจากภาพ liquid glass
+   พื้นหลังไล่เฉดทแยง สว่างมุมบนซ้าย → เข้มมุมล่างขวา
+   เพื่อให้ฟิล์มแก้วบางๆ มีอะไรให้ "หักเห" และเด่นขึ้นมา
+   ============================================ */
+
+:root{
+  /* ---------- พื้นหลัง ---------- */
+  /* มุมสว่างของ gradient ต้องไม่สว่างเกินไป
+     ไม่งั้นตัวอักษรสีอ่อนจะ contrast ไม่ผ่าน WCAG AA (วัดแล้วตกที่ 2.68) */
+  --bg:#313a47;
+  --bg-hi:#485464;          /* มุมสว่าง */
+  --bg-lo:#1b212a;          /* มุมเข้ม */
+
+  /* ---------- ตัวอักษร ---------- */
+  --ink:#f5f8fc;
+  --ink-soft:#d6dfea;
+  /* --ink-faint ใช้กับข้อความจริง (จำนวนบทเรียน ฯลฯ) ไม่ใช่แค่ของประดับ
+     จึงต้องสว่างพอผ่าน AA ไม่ใช่จางตามชื่อ */
+  --ink-faint:#dbe3ec;
+
+  /* ---------- สีแบรนด์ ----------
+     สว่างขึ้นกว่าธีมสว่างเดิม เพราะ #0e7c5c จมหายบนพื้นเข้ม */
+  --green:#88f4c5;
+  --green-deep:#b3f9dd;
+  --green-line:#88f4c544;
+  --blue:#b4ecfd;
+
+  /* ---------- วัสดุแก้ว ----------
+     ฟิล์มบางมาก ความ "เป็นแก้ว" มาจากขอบและ backdrop-filter
+     ไม่ใช่จากความทึบของพื้น */
+  --glass-1:rgba(255,255,255,.20);
+  --glass-2:rgba(255,255,255,.07);
+  --glass-3:rgba(255,255,255,.13);
+  --rim:rgba(255,255,255,.55);
+  --rim-soft:rgba(255,255,255,.18);
+
+  --surface:rgba(255,255,255,.07);
+  --mint:rgba(255,255,255,.11);      /* chip เล็กๆ */
+  --mint-2:rgba(255,255,255,.20);
+  --line:rgba(255,255,255,.16);
+
+  --footer-bg:rgba(12,16,22,.55);
+  --footer-ink:#e8eff7;
+
+  --shadow:0 20px 45px -20px rgba(0,0,0,.55);
+  --shadow-lift:0 34px 70px -26px rgba(0,0,0,.7);
+  --radius:20px;
+
+  /* Kanit เป็น geometric sans ไม่ใช่ serif — fallback ไป IBM Plex Sans Thai
+     (ฟอนต์เนื้อหาที่โหลดอยู่แล้ว) แทน generic serif เดิม กัน FOUT ตอน Kanit ยังโหลดไม่เสร็จ
+     แล้ว fallback ดันเป็น serif โผล่มาแวบหนึ่งก่อนสลับ */
+  --display:'Kanit','IBM Plex Sans Thai',sans-serif;
+  --sans:'IBM Plex Sans Thai','IBM Plex Sans',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+
+  --ease-out:cubic-bezier(.2,.7,.2,1);
+  --ease-inout:cubic-bezier(.65,0,.35,1);
+
+  /* ---------- ของใหม่: เดิม hardcode ตรงๆ ไม่ผ่าน token เลย ----------
+     ต้องดึงออกมาเป็นตัวแปรก่อน ไม่งั้น light mode override ไม่ได้ */
+  --dot-grid:rgba(255,255,255,.06);
+  --ring-border:rgba(255,255,255,.55);
+  --ring-fill:rgba(255,255,255,.06);
+  --ring-fill-hot:rgba(255,255,255,.14);
+  --footer-line:#ffffff1a;
+  --footer-tag-ink:#ffffff99;
+  --footer-meta-ink:#ffffff66;
+  --footer-chip-bg:#ffffff14;
+}
+
+/* ============================================
+   LIGHT MODE — [data-theme="light"] บน <html>
+   ตั้งโดย inline script กัน FOUC ใน <head> ของทั้งสองหน้า
+   ============================================
+
+   หลักการ: แก้เฉพาะจุดที่จะ "พังจริง" (อ่านไม่ออก/มองไม่เห็น) ไม่ใช่ทุกรายละเอียด
+   วัสดุกระจก (--glass-1/2/3, --rim-soft, --mint ฯลฯ) คงค่าเดิมไว้โดยตั้งใจ —
+   กระจกฝ้าขาวบนพื้นขาวยังเป็นธรรมเนียม glassmorphism ที่ถูกต้อง (Apple/Windows
+   ก็ทำแบบนี้) ความแตกต่างจากพื้นหลังมาจาก blur/shadow ไม่ใช่สีพื้น
+   รายละเอียดกระจกเล็กๆ (แสงไหลตามเมาส์, ขอบไล่เฉด 1px) จะจางลงเองแบบดูเรียบร้อย
+   ไม่ใช่บั๊ก */
+:root[data-theme="light"]{
+  --ink:#12161c;
+  --ink-soft:#3d4854;
+  --ink-faint:#5c6773;
+
+  /* เขียว/ฟ้าเดิมเป็นพาสเทลจางออกแบบไว้เด่นบนพื้นมืด
+     ใช้เป็นตัวหนังสือ/ไอคอนบนพื้นขาวจะ contrast ไม่พอ ต้องเข้มขึ้นมาก
+
+     ค่าที่ใช้อยู่นี้คำนวณ contrast ratio จริงด้วยสูตร WCAG (relative luminance)
+     เทียบกับ --bg #f5f7f9 — ตัวแรกที่ลองไว้ (#0e8a5c เขียว / #1a7bab ฟ้า) วัดได้
+     4.06 และ 4.38 ตกเกณฑ์ AA (ต้อง ≥4.5) ทั้งคู่ ทั้งที่ทั้งสองสีถูกใช้เป็นสีตัวหนังสือ
+     จริง (.eyebrow, .topic-card .tag, .slider-group label b, .about-num) จึงเข้มลงอีก
+     จนผ่าน — เขียว 5.00 / ฟ้า 5.87 คงเฉดเดิมไว้ (hue เดียวกับตอนธีมมืด) แค่เข้มขึ้น */
+  --green:#0b7a4f;
+  --green-deep:#0a6b47;
+  --green-line:#0b7a4f33;
+  --blue:#146690;
+
+  --footer-bg:#eef1f5;
+  --footer-ink:#12161c;
+  --footer-line:#12161c1a;
+  /* ตัวหนังสือ 2 ตัวนี้ตั้งใจใช้ค่าทึบแทน alpha-blend
+     เพราะ contrast ของ alpha ขึ้นกับ compositing กับ --footer-bg ด้วย คำนวณมือแล้ว
+     ได้แค่ 4.54 เฉียดเกณฑ์เกินไปจนวางใจไม่ได้ (การปัดเศษระหว่างคำนวณอาจคลาดเคลื่อน)
+     ใช้ค่าเดียวกับ --ink-soft/--ink-faint ที่ยืนยัน contrast แน่นอนแล้วแทน */
+  --footer-tag-ink:#3d4854;
+  --footer-meta-ink:#5c6773;
+  --footer-chip-bg:#12161c12;
+
+  --dot-grid:rgba(20,25,32,.07);
+  --ring-border:rgba(20,25,32,.32);
+  --ring-fill:rgba(20,25,32,.05);
+  --ring-fill-hot:rgba(20,25,32,.12);
+}
+
+/* พื้นหลังหน้าเป็น multi-layer gradient (ไม่แยกเป็นตัวแปรย่อยได้สะอาด)
+   ต้อง override ทั้ง shorthand — เวอร์ชันมืดมีลายทแยง+จุดไฮไลต์ให้กระจกสะท้อน
+   เวอร์ชันขาวไม่ต้องการความดราม่านั้น ทำเรียบๆ ตามที่ขอ */
+:root[data-theme="light"] body{
+  background:#f5f7f9;
+  background-attachment:fixed;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+/* NOTE: scroll-behavior:smooth ถูกถอดออกโดยตั้งใจ
+   เพราะจะตีกับ smooth scroll ที่ขับด้วย JS ใน scroll.js */
+html{scroll-behavior:auto;background:var(--bg-lo);}
+
+body{
+  font-family:var(--sans);
+  color:var(--ink);
+  line-height:1.6;
+  overflow-x:hidden;
+  min-height:100vh;
+  /* ไล่เฉดทแยงเหมือนภาพอ้างอิง + จุดสว่างมุมบนซ้าย
+     background-attachment:fixed ให้พื้นอยู่นิ่งขณะเลื่อน
+     เหมือนมองผ่านกระจกไปที่ฉากเดียวกันตลอด */
+  background:
+    radial-gradient(1100px 780px at 12% 4%, rgba(255,255,255,.09), transparent 62%),
+    radial-gradient(900px 700px at 88% 96%, rgba(0,0,0,.34), transparent 60%),
+    linear-gradient(148deg, var(--bg-hi) 0%, var(--bg) 46%, var(--bg-lo) 100%);
+  background-attachment:fixed;
+  background-repeat:no-repeat;
+}
+
+/* ลายจุดบางๆ ให้พื้นมีเนื้อ ไม่เรียบจนแบน */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  pointer-events:none;
+  z-index:0;
+  background-image:radial-gradient(circle at 1px 1px, var(--dot-grid) 1px, transparent 1px);
+  background-size:26px 26px;
+}
+
+img,svg{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+ul{list-style:none;}
+
+h1,h2,h3{font-family:var(--display);color:var(--ink);letter-spacing:-.01em;}
+
+/* focus ต้องมองเห็นเสมอ — canvas และ custom cursor ห้ามบัง */
+:focus-visible{
+  outline:2.5px solid var(--green);
+  outline-offset:3px;
+  border-radius:6px;
+}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px;}
+
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--green);
+  background:var(--mint);
+  border:1px solid var(--rim-soft);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  padding:6px 14px;border-radius:100px;
+}
+
+.btn{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--sans);font-weight:600;font-size:.98rem;
+  padding:14px 26px;border-radius:100px;border:1px solid transparent;
+  cursor:pointer;white-space:nowrap;
+  position:relative;
+  /* transform ถูกจัดการโดย magnetic ใน cursor.js — CSS จึงไม่ transition transform */
+  transition:box-shadow .3s var(--ease-out), background .3s var(--ease-out),
+             color .3s var(--ease-out), border-color .3s var(--ease-out);
+}
+
+/* ปุ่มหลัก — เขียวสว่างบนพื้นเข้ม ตัวอักษรเข้มเพื่อ contrast สูงสุด */
+.btn-primary{
+  background:linear-gradient(180deg, var(--green), #34c98a);
+  color:#08251a;
+  box-shadow:0 14px 30px -12px rgba(78,227,160,.5), inset 0 1px 0 rgba(255,255,255,.45);
+}
+.btn-primary:hover{box-shadow:0 20px 40px -12px rgba(78,227,160,.62), inset 0 1px 0 rgba(255,255,255,.6);}
+
+/* ปุ่มรอง — แก้วบางๆ */
+.btn-outline{
+  background:linear-gradient(180deg, var(--glass-1), var(--glass-2));
+  color:var(--ink);
+  border-color:var(--rim-soft);
+  backdrop-filter:blur(14px) saturate(160%);
+  -webkit-backdrop-filter:blur(14px) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 8px 22px -12px rgba(0,0,0,.55);
+}
+.btn-outline:hover{
+  border-color:rgba(255,255,255,.45);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 14px 30px -12px rgba(0,0,0,.6);
+}

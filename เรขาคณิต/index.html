@@ -1,22 +1,340 @@
 <!DOCTYPE html>
-<html lang="th">
+<!-- data-theme="light" ตั้งไว้ตั้งแต่ต้นโดยตั้งใจ — หน้านี้ default ต้องสว่างเพราะกระดาษต้องขาว
+     ซึ่งกลับกับเว็บแม่ที่ default เป็นมืด (ดูคำอธิบายหัวไฟล์ assets/css/geo.css) -->
+<html lang="th" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>เรขาคณิต</title>
-<link rel="stylesheet" href="style.css">
+<meta name="color-scheme" content="light dark">
+<title>เรขาคณิต — กระดาษวาดรูปที่วัดค่าได้</title>
+
+<!-- ต้องรันก่อน CSS โหลด ไม่งั้นคนที่เลือกธีมมืดไว้จะเห็นกระดาษขาววาบขึ้นมาก่อนหนึ่งเฟรม
+     คีย์ 'im-theme' ต้องตรงกับที่ IM.setTheme เขียนไว้ใน assets/js/core.js
+     ห้ามย้ายไปไว้ท้ายไฟล์เด็ดขาด และห้ามใส่ async/defer -->
+<script>
+(function () {
+  try {
+    if (localStorage.getItem('im-theme') === 'dark') {
+      document.documentElement.removeAttribute('data-theme');
+    }
+  } catch (e) {}                 /* localStorage ถูกบล็อกได้ (private mode) — ปล่อยให้เป็นธีมสว่างไป */
+})();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Kanit:wght@500;600;700&display=swap" rel="stylesheet">
+
+<!-- ลำดับสำคัญ: tokens (ตัวแปร+reset) → layout (.tool-modal .logo-mark .theme-toggle)
+     → motion (ชุด reduced-motion) → geo (ทับทุกอย่างด้วยหน้าตาเฉพาะของแอปนี้) -->
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/layout.css">
+<link rel="stylesheet" href="assets/css/motion.css">
+<link rel="stylesheet" href="assets/css/geo.css">
 </head>
 <body>
+
 <canvas id="c"></canvas>
-<!-- ทางกลับหน้าเว็บหลัก — ต้องอยู่หลัง <canvas> ในลำดับ DOM และมี z-index ของตัวเอง
-     ไม่งั้นผืนผ้าใบที่ปูเต็มจอ (position:fixed) จะทับจนกดไม่โดน -->
-<a class="back-home" href="../หน้าเว็บ/index.html">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M11 18l-6-6 6-6"/></svg>
-  กลับหน้าหลัก
-</a>
-<!-- app.js ต้องมาก่อน — help.js ดัก keydown แบบ capture เพื่อกันปุ่มลัดของกระดาน
-     ขณะการ์ดเปิดอยู่ ซึ่งทำงานได้ไม่ว่าลำดับไหน แต่วางตามลำดับที่อ่านแล้วเข้าใจง่ายกว่า -->
+
+<!-- ============================================
+     แถบบน — ป้ายชื่อ + ปุ่ม
+     ตัว .geo-bar เองเป็น pointer-events:none ลูกๆ เปิดกลับมาเอง
+     คลิกกลางแถบจึงตกถึงกระดาษได้ตามปกติ
+     ============================================ -->
+<div class="geo-bar">
+  <!-- ปุ่มกลับกับป้ายชื่ออยู่ในกล่องเดียวกัน เพราะ .geo-bar เป็น space-between
+       ถ้าปล่อยเป็นลูกสามตัวลอยๆ ป้ายชื่อจะถูกดันไปกลางแถบ -->
+  <div class="geo-left">
+    <!-- ทางกลับหน้าเว็บหลัก แบบเดียวกับที่หน้าเครื่องคิดเลขมี
+         ต่างกันแค่ตรงนี้วางในแถบ ไม่ปักลอย เพราะมุมบนซ้ายมีป้ายชื่อจองอยู่แล้ว
+         ไม่ใส่ data-cursor เพราะหน้านี้ไม่ได้โหลด cursor.js
+         aria-label จำเป็น เพราะจอแคบซ่อน .bh-label ทิ้ง เหลือแต่ไอคอนที่ aria-hidden
+         ถ้าไม่มีจะกลายเป็นลิงก์ไร้ชื่อ — ปุ่มอื่นในแถบนี้ก็ติด aria-label ไว้เหมือนกัน -->
+    <a class="back-home" href="../หน้าเว็บ/index.html" aria-label="กลับหน้าหลัก">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5"/>
+        <path d="M11 18l-6-6 6-6"/>
+      </svg>
+      <span class="bh-label">กลับหน้าหลัก</span>
+    </a>
+
+    <div class="geo-brand">
+      <span class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="8.6"/>
+          <path d="M12 3.4 L19.4 16.2 L4.6 16.2 Z"/>
+          <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+        </svg>
+      </span>
+      <div>
+        <div class="geo-title">เรขาคณิต</div>
+      </div>
+      
+    </div>
+  </div>
+
+  <div class="geo-actions">
+    <button type="button" id="geoHelpOpen" class="theme-toggle" aria-label="ดูปุ่มลัดทั้งหมด">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9.2"/>
+        <path d="M9.2 9.3a2.9 2.9 0 1 1 3.7 3.1c-.6.2-.9.7-.9 1.3v.6"/>
+        <path d="M12 17.4h.01"/>
+      </svg>
+    </button>
+
+    <!-- ไอคอน sun/moon สลับด้วย CSS ล้วน key จาก [data-theme] (layout.css) ไม่ต้องรอ JS -->
+    <button type="button" id="themeToggle" class="theme-toggle"
+            aria-pressed="true" aria-label="สลับเป็นธีมมืด">
+      <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4.2"/>
+        <path d="M12 2v2.4M12 19.6V22M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2 12h2.4M19.6 12H22M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/>
+      </svg>
+      <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20.5 14.2A8.6 8.6 0 0 1 9.8 3.5a8.6 8.6 0 1 0 10.7 10.7Z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- ============================================
+     แถบเครื่องมือ — app.js toggle คลาส .show / .*-open ให้เอง
+     id และ data-* ทุกตัวถูกอ้างจาก app.js ห้ามเปลี่ยนชื่อ
+     ============================================ -->
+<div id="toolbar" class="toolbar">
+  <div class="tool-wrap">
+    <button type="button" class="tool" data-tool="bisect" title="แบ่งด้าน — คลิกที่ด้านเพื่อสร้างจุดแบ่ง">
+      <svg viewBox="0 0 40 40" aria-hidden="true">
+        <line x1="6" y1="34" x2="34" y2="6"/>
+        <circle cx="20" cy="20" r="5.5"/>
+      </svg>
+    </button>
+
+    <div class="tool-options bisect-options">
+      <input type="text" id="bisect-count" class="tool-num" value="1"
+             title="จำนวนจุดที่จะแบ่ง (1 = แบ่งครึ่ง, 2 = แบ่งสามส่วน)">
+    </div>
+  </div>
+
+  <div class="tool-wrap">
+    <button type="button" class="tool" data-tool="shape" title="รูปร่าง — เลือกแบบแล้วลากบนพื้นที่ว่าง">
+      <svg viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="25" cy="13" r="10"/>
+        <rect x="5" y="13" width="18" height="18"/>
+        <polygon points="20,21 36,35 20,35"/>
+      </svg>
+    </button>
+
+    <div class="tool-options shape-options">
+      <button type="button" class="tool opt" data-shape="circle" title="วงกลม / วงรี">
+        <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="13"/></svg>
+      </button>
+      <button type="button" class="tool opt" data-shape="tri" title="สามเหลี่ยม">
+        <svg viewBox="0 0 40 40" aria-hidden="true"><polygon points="20,8 34,32 6,32"/></svg>
+      </button>
+      <button type="button" class="tool opt" data-shape="rtri" title="สามเหลี่ยมมุมฉาก">
+        <svg viewBox="0 0 40 40" aria-hidden="true"><polygon points="8,8 8,32 32,32"/></svg>
+      </button>
+      <button type="button" class="tool opt" data-shape="rect" title="สี่เหลี่ยม">
+        <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="7" y="11" width="26" height="20"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="tool-sep" aria-hidden="true"></div>
+
+  <div class="tool-wrap">
+    <button type="button" class="tool" data-tool="resize" title="ขยาย/ย่อสิ่งที่เลือก — กรอกตัวคูณแล้วกด Enter">
+      <svg viewBox="0 0 40 40" aria-hidden="true">
+        <rect x="3" y="3" width="34" height="34" stroke-dasharray="4 3"/>
+        <rect x="13" y="13" width="14" height="14"/>
+        <path d="M11 11 L5 5 M5 5 L11 5 M5 5 L5 11"/>
+        <path d="M29 11 L35 5 M35 5 L29 5 M35 5 L35 11"/>
+        <path d="M11 29 L5 35 M5 35 L11 35 M5 35 L5 29"/>
+        <path d="M29 29 L35 35 M35 35 L29 35 M35 35 L35 29"/>
+      </svg>
+    </button>
+
+    <div class="tool-options resize-options">
+      <input type="text" id="resize-scale" class="tool-num" value="1.5"
+             title="ตัวคูณ เช่น 1.5 = ขยาย 1.5 เท่า, 0.5 = ย่อครึ่ง (กด Enter เพื่อสั่ง)">
+    </div>
+  </div>
+
+  <div class="tool-sep" aria-hidden="true"></div>
+
+  <div class="tool-wrap">
+    <button type="button" class="tool" data-tool="scale" title="ตารางเส้น — กด x/y เปิดปิด ตั้งระยะห่างที่นี่">
+      <svg viewBox="0 0 40 40" aria-hidden="true">
+        <rect x="11" y="4" width="18" height="32"/>
+        <path d="M11 12 H21 M11 20 H21 M11 28 H21"/>
+      </svg>
+    </button>
+
+    <div class="tool-options scale-options">
+      <div class="scale-row">
+        <button type="button" class="axis-btn" data-grid="y" title="เส้นตั้ง (แกน Y) — กดเปิด กดซ้ำปิด">
+          <svg viewBox="0 0 40 40" aria-hidden="true">
+            <path d="M10 8 L20 22 L30 8 M20 22 L20 33"/>
+          </svg>
+        </button>
+        <input type="text" id="scale-y" class="tool-num" value="2" title="ระยะห่างเส้นตั้ง (ซม)">
+      </div>
+      <div class="scale-row">
+        <button type="button" class="axis-btn" data-grid="x" title="เส้นนอน (แกน X) — กดเปิด กดซ้ำปิด">
+          <svg viewBox="0 0 40 40" aria-hidden="true">
+            <path d="M10 10 L30 30 M30 10 L10 30"/>
+          </svg>
+        </button>
+        <input type="text" id="scale-x" class="tool-num" value="2" title="ระยะห่างเส้นนอน (ซม)">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- app.js เติมข้อความแล้ว toggle .show ให้เอง -->
+<div id="notice" class="notice"></div>
+
+<!-- ============================================
+     ข้อความใบ้ครั้งแรก — geo-ui.js ซ่อนให้เมื่อผู้ใช้กด Ctrl / เปิดหน้าต่างปุ่มลัด / ครบ 11 วิ
+     แล้วจำไว้ใน localStorage จะได้ไม่ทวงซ้ำ
+     ============================================ -->
+<div id="geoHint" class="geo-hint">
+  <span>กด <kbd>Ctrl</kbd> เพื่อเปิดแถบเครื่องมือ · <kbd>1</kbd> วางจุด · <kbd>Shift</kbd> ดูค่าที่วัดได้</span>
+</div>
+
+<!-- ============================================
+     หน้าต่างรวมปุ่มลัด — โครง .tool-modal/.tm-* มาจาก layout.css
+     geo-ui.js คุมการเปิด/ปิด และใส่ .geo-modal-open บน <html> ให้ app.js หยุดรับคีย์
+     ============================================ -->
+<div id="geoHelp" class="tool-modal" hidden>
+  <div class="tm-backdrop"></div>
+
+  <div class="tm-panel" role="dialog" aria-modal="true" aria-labelledby="geoHelpTitle">
+    <button type="button" id="geoHelpClose" class="tm-close" aria-label="ปิดหน้าต่าง">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M6 6 L18 18 M18 6 L6 18"/>
+      </svg>
+    </button>
+
+    <div class="tm-head">
+      <span class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="8.6"/>
+          <path d="M12 3.4 L19.4 16.2 L4.6 16.2 Z"/>
+          <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+        </svg>
+      </span>
+      <h2 id="geoHelpTitle">ปุ่มลัดทั้งหมด</h2>
+      <p>เกือบทุกอย่างในกระดาษนี้สั่งจากคีย์บอร์ด กดค้างไว้แล้วดูว่าอะไรเปลี่ยน</p>
+    </div>
+
+    <div class="geo-keys">
+      <div class="gk-group">
+        <h3>กดค้าง</h3>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>Ctrl</kbd></span>
+          <span class="gk-desc">เปิดแถบเครื่องมือด้านล่าง</span>
+        </div>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>Shift</kbd></span>
+          <span class="gk-desc">แสดงความยาว พื้นที่ และมุมของสิ่งที่ชี้อยู่</span>
+        </div>
+      </div>
+
+      <div class="gk-group">
+        <h3>สร้างและลบ</h3>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>1</kbd></span>
+          <span class="gk-desc">วางจุดตรงตำแหน่งเมาส์ — ชี้ที่เส้นโค้งอยู่จะเกาะลงบนเส้นนั้น</span>
+        </div>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>Delete</kbd><span class="plus">/</span><kbd>Backspace</kbd></span>
+          <span class="gk-desc">ลบสิ่งที่เลือกไว้ ถ้าไม่ได้เลือกอะไรก็ลบสิ่งที่ชี้อยู่</span>
+        </div>
+      </div>
+
+      <div class="gk-group">
+        <h3>ตารางเส้น</h3>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>X</kbd></span>
+          <span class="gk-desc">เปิด/ปิดเส้นนอน กดซ้ำเพื่อปิด</span>
+        </div>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>Y</kbd></span>
+          <span class="gk-desc">เปิด/ปิดเส้นตั้ง ตั้งระยะห่างได้ที่ปุ่มไม้บรรทัด</span>
+        </div>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>Esc</kbd></span>
+          <span class="gk-desc">เลิกใช้เครื่องมือและปิดตารางทั้งหมด</span>
+        </div>
+      </div>
+
+      <div class="gk-group">
+        <h3>แก้ไข</h3>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Z</kbd></span>
+          <span class="gk-desc">ย้อนกลับ</span>
+        </div>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>C</kbd><span class="plus">/</span><kbd>V</kbd></span>
+          <span class="gk-desc">คัดลอกและวางสิ่งที่เลือกไว้</span>
+        </div>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>Shift</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span>คลิก</span>
+          <span class="gk-desc">กรอกค่าทับ — จิ้มที่ตัวเลข หรือจิ้มที่ด้าน/รูปตรงๆ ก็ได้</span>
+        </div>
+      </div>
+
+      <div class="gk-group">
+        <h3>เมาส์</h3>
+        <div class="gk-row">
+          <span class="gk-keys">ลากบนที่ว่าง</span>
+          <span class="gk-desc">ลากกรอบเลือกหลายชิ้นพร้อมกัน</span>
+        </div>
+        <div class="gk-row">
+          <span class="gk-keys">ลากที่จุด</span>
+          <span class="gk-desc">ย้ายจุดหรือชิ้นที่เลือกไว้ทั้งหมด</span>
+        </div>
+        <div class="gk-row">
+          <span class="gk-keys">ที่จับวงกลม</span>
+          <span class="gk-desc">โผล่มุมบนขวาของสิ่งที่เลือก ลากเพื่อหมุน</span>
+        </div>
+      </div>
+
+      <div class="gk-group">
+        <h3>หน่วยวัด</h3>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>10 px</kbd></span>
+          <span class="gk-desc">เท่ากับ 1 เซนติเมตรบนกระดาษ</span>
+        </div>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>100</kbd></span>
+          <span class="gk-desc">จำนวนจุดสูงสุดที่สร้างได้ในกระดาษเดียว</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="gk-note">
+      จุดที่ลากมาทับกันจะ <b>ยุบรวมเป็นจุดเดียว</b> เองอัตโนมัติ —
+      ใช้ต่อรูปหลายชิ้นเข้าด้วยกันได้เลยโดยไม่ต้องเล็งให้ตรงเป๊ะ
+    </p>
+  </div>
+</div>
+
+<!-- ลำดับสำคัญ: core สร้าง IM ก่อน → theme/geo-ui แค่ register ตัวเอง → main เป็นตัว boot ตัวเดียว
+     โมดูลของเว็บแม่ (hero/lab/lessons/scroll/field/tilt/cursor) ไม่โหลดที่นี่โดยตั้งใจ
+     main.js ข้ามตัวที่ไม่ได้ลงทะเบียนเงียบๆ อยู่แล้ว -->
+<script src="assets/js/core.js"></script>
+<script src="assets/js/theme.js"></script>
+<script src="assets/js/geo-ui.js"></script>
 <script src="app.js"></script>
-<script src="help.js"></script>
+<script src="assets/js/main.js"></script>
 </body>
 </html>

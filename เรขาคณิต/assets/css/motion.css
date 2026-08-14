@@ -1,0 +1,180 @@
+/* ============================================
+   motion.css — โมชั่นทั้งหมด
+   canvas layer / reveal / text split / cursor / tilt / keyframes
+   ============================================ */
+
+/* ---------- 1. CANVAS PARTICLE LAYER ---------- */
+/* pointer-events:none สำคัญมาก — ถ้าลืม ทั้งหน้าจะคลิกอะไรไม่ได้เลย */
+#field{
+  position:fixed;inset:0;
+  width:100%;height:100%;
+  z-index:0;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 1.1s ease;
+}
+#field.is-on{opacity:1;}
+
+/* ---------- 2. REVEAL ON SCROLL ---------- */
+.reveal{
+  opacity:0;
+  transform:translateY(28px);
+  transition:opacity .85s var(--ease-out), transform .85s var(--ease-out);
+}
+.reveal.is-visible{opacity:1;transform:none;}
+
+/* ---------- 3. TEXT SPLIT (Thai-safe, word level) ----------
+   หั่นทีละ "คำ" ด้วย Intl.Segmenter ไม่ใช่ทีละตัวอักษร
+   เพราะสระบน/ล่างและวรรณยุกต์ไทยเป็น combining marks
+   ถ้าหั่นทีละตัวจะหลุดจากพยัญชนะทันที                               */
+.split-line{
+  display:block;
+  overflow:hidden;
+  /* เผื่อที่ให้วรรณยุกต์ที่ลอยสูงกว่า cap height และสระล่าง
+     แล้ว margin ลบกลับเพื่อไม่ให้ระยะห่างเปลี่ยน */
+  padding:.3em .08em .2em;
+  margin:-.3em -.08em -.2em;
+}
+.split-word{
+  display:inline-block;
+  transform:translateY(115%);
+  opacity:0;
+  transition:transform .95s var(--ease-out), opacity .7s var(--ease-out);
+}
+.split.is-visible .split-word{transform:translateY(0);opacity:1;}
+
+/* ---------- 4. CUSTOM CURSOR ---------- */
+/* JS เขียน transform เป็น translate3d(x,y,0) scale(s) ทั้งตำแหน่งและขนาด
+   จึงไม่ transition width/height (จะ trigger layout ทุกเฟรม) */
+.cur-dot,.cur-ring{
+  position:fixed;top:0;left:0;
+  border-radius:50%;
+  pointer-events:none;
+  z-index:9999;
+  transform:translate3d(-200px,-200px,0);
+  will-change:transform;
+}
+.cur-dot{
+  width:7px;height:7px;margin:-3.5px 0 0 -3.5px;
+  background:var(--green);
+  box-shadow:0 0 12px rgba(78,227,160,.9);
+}
+.cur-ring{
+  width:40px;height:40px;margin:-20px 0 0 -20px;
+  /* var(...) แทน rgba(255,255,255,...) ตรงๆ — นี่คือ "เส้นขอบ" ไม่ใช่แค่แสงไฮไลต์
+     ประดับ ถ้าไม่แก้ วงแหวนจะมองไม่เห็นเลยบนพื้นขาวใน light mode */
+  border:1.5px solid var(--ring-border);
+  background:var(--ring-fill);
+  backdrop-filter:blur(2px);
+  -webkit-backdrop-filter:blur(2px);
+  transition:background .3s ease, border-color .3s ease, opacity .3s ease;
+}
+.cur-ring.is-hot{background:var(--ring-fill-hot);border-color:var(--green);}
+
+/* ซ่อนเคอร์เซอร์ระบบเฉพาะเมื่อ JS ยืนยันแล้วว่าตัวแทนทำงานจริง
+   (คลาสนี้ถูกใส่โดย cursor.js เท่านั้น) */
+html.im-cursor,
+html.im-cursor *{cursor:none;}
+/* ยกเว้น slider ของ Math Lab — ต้องเห็นเคอร์เซอร์จริงตอนลาก */
+html.im-cursor input[type=range],
+html.im-cursor input[type=range]::-webkit-slider-thumb{cursor:pointer;}
+
+/* ---------- 5. 3D TILT + SPECULAR GLOW ----------
+   โครงสร้าง:  <div class="tilt-scene reveal"><div class="…-card tilt"></div></div>
+   ต้องแยกสองชั้นเพราะ
+   1) .reveal animate transform อยู่แล้ว ถ้า tilt.js เขียน transform ทับจะตีกัน
+   2) perspective มีผลกับ "ลูกโดยตรง" เท่านั้น .tilt จึงต้องเป็นลูกของ .tilt-scene */
+.tilt-scene{
+  perspective:1100px;
+  perspective-origin:50% 50%;
+  display:flex;            /* ให้การ์ดยืดเต็มความสูงของ grid track */
+}
+.tilt-scene > .tilt{width:100%;}
+
+.tilt{
+  position:relative;
+  transform-style:preserve-3d;
+  /* transform ถูกเขียนโดย tilt.js ทุกเฟรม — ห้าม transition ไม่งั้นจะสู้กัน */
+  transition:box-shadow .45s var(--ease-out), border-color .45s var(--ease-out);
+}
+.tilt.is-lift{
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.85),
+    inset 0 0 0 1px rgba(255,255,255,.24),
+    inset 0 -22px 30px -22px rgba(255,255,255,.55),
+    var(--shadow-lift);
+}
+
+/* แสงสะท้อนวิ่งตามเมาส์ — JS เขียนแค่ --mx/--my เป็น % */
+.tilt::after{
+  content:'';
+  position:absolute;inset:0;
+  border-radius:inherit;
+  background:radial-gradient(300px circle at var(--mx,50%) var(--my,50%),
+             rgba(255,255,255,.30), rgba(255,255,255,.10) 36%, transparent 64%);
+  opacity:0;
+  transition:opacity .45s var(--ease-out);
+  pointer-events:none;
+  z-index:3;
+}
+.tilt.is-lift::after{opacity:1;}
+
+/* ขอบเรืองแสงสีเขียวจางๆ ตามเมาส์ */
+.tilt::before{
+  content:'';
+  position:absolute;inset:-1px;
+  border-radius:inherit;
+  background:radial-gradient(240px circle at var(--mx,50%) var(--my,50%),
+             rgba(78,227,160,.20), transparent 70%);
+  opacity:0;
+  transition:opacity .45s var(--ease-out);
+  pointer-events:none;
+  z-index:0;
+}
+.tilt.is-lift::before{opacity:1;}
+
+/* ---------- 6. MAGNETIC BUTTONS ---------- */
+/* transform เขียนโดย cursor.js — ตัว label ขยับน้อยกว่าปุ่มเล็กน้อยให้ดูมีมิติ */
+.magnetic{will-change:transform;}
+
+/* ---------- 7. KEYFRAMES ---------- */
+@keyframes pulse{
+  0%,100%{opacity:1;transform:scale(1);}
+  50%{opacity:.5;transform:scale(1.3);}
+}
+.hero-tagline .dot{animation:pulse 2s infinite;}
+
+@keyframes floaty{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-14px);}
+}
+.float{animation:floaty 6s ease-in-out infinite;}
+
+@keyframes scrollline{
+  0%{opacity:.2;transform:scaleY(.4);}
+  50%{opacity:1;transform:scaleY(1);}
+  100%{opacity:.2;transform:scaleY(.4);}
+}
+.scroll-cue .line{
+  width:1px;height:34px;transform-origin:top;
+  background:linear-gradient(var(--ink-faint),transparent);
+  animation:scrollline 1.8s infinite;
+}
+
+@keyframes drawIn{to{stroke-dashoffset:0;}}
+
+/* ---------- 8. PREFERS-REDUCED-MOTION ----------
+   บล็อกนี้จัดการเฉพาะฝั่ง CSS
+   ส่วนโมชั่นที่ขับด้วย JS (particle/cursor/tilt/smooth scroll)
+   ถูกปิดด้วย IM.motionOK ใน core.js — CSS หยุด rAF ไม่ได้ */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+  }
+  .reveal{opacity:1 !important;transform:none !important;}
+  .split-word{opacity:1 !important;transform:none !important;}
+  #field,.cur-dot,.cur-ring{display:none !important;}
+  .tilt{transform:none !important;}
+}
