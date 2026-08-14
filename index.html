@@ -11,14 +11,52 @@
 <script>(function(){var d=null;try{d=localStorage.getItem('im-device');}catch(e){}if(d!=='mobile'&&d!=='desktop')d=(matchMedia('(pointer:coarse)').matches||innerWidth<=820)?'mobile':'desktop';document.documentElement.dataset.device=d;})();</script>
 
 <style>
+  /* ---------- สีประจำโปรเจกต์ ----------
+     ชื่อและค่าตรงกับ หน้าเว็บ/assets/css/tokens.css ทุกตัว แต่ต้องเขียนซ้ำที่นี่เพราะ
+     หน้านี้เป็นหน้าเดียวจบ ไม่โหลด assets/ (เหตุผลอยู่ท้ายไฟล์) — คัดมาเฉพาะที่ใช้จริง
+
+     ก่อนหน้านี้หน้านี้ hardcode สีไว้ 11 ค่า ซึ่ง "เกือบ" ตรงกับ token แต่ไม่ตรง
+     (พื้นหลังเพี้ยนไปทั้งสามหยุด) และสองค่าที่ใช้กับตัวหนังสือตกเกณฑ์ contrast
+     ดูคอมเมนต์ตรง --ink-soft/--ink-faint ข้างล่าง */
+  :root{
+    --bg-hi:#485464;          /* มุมสว่างของ gradient */
+    --bg:#313a47;
+    --bg-lo:#1b212a;          /* มุมเข้ม */
+
+    --ink:#f5f8fc;
+    /* สองตัวนี้คือที่แก้จริง ของเดิมเป็น #94a2b3 กับ #6b7785 ซึ่งวัด contrast เทียบกับ
+       มุมสว่างของ gradient (จุดที่แย่ที่สุด และเป็นที่ที่ข้อความพวกนี้วางอยู่พอดี) ได้
+       2.89 กับ 1.65 — ตกเกณฑ์ WCAG AA ที่ต้อง >= 4.5 ทั้งคู่ ทั้งที่เป็นข้อความจริง
+       ไม่ใช่ของประดับ (คำอธิบายโหมดอุปกรณ์ กับชื่อโรงเรียน)
+       ค่าใหม่เป็นของ tokens.css ตรงๆ วัดได้ 5.59 กับ 5.81
+
+       ชื่อ "faint" สว่างกว่า "soft" เล็กน้อยซึ่งดูสวนชื่อ — เป็นแบบนี้ใน tokens.css
+       อยู่แล้ว เพราะ --ink-faint ถูกดันให้สว่างขึ้นจนผ่าน AA (มีคอมเมนต์กำกับไว้ที่นั่น)
+       ผลคือสองตัวนี้สว่างใกล้กันมาก ลำดับความสำคัญของข้อความจึงมาจาก "ขนาด"
+       ไม่ใช่สี ซึ่งหน้านี้ต่างกันอยู่แล้ว (.bio .9rem / footer .8rem / note .78rem) */
+    --ink-soft:#d6dfea;
+    --ink-faint:#dbe3ec;
+
+    --green:#88f4c5;
+    /* ปลายเข้มของแถบเขียว กับหมึกที่เขียนทับบนเขียว ไม่มีใน tokens.css ทั้งคู่
+       แต่ #08251a เป็นค่าเดียวกับที่ เรขาคณิต/assets/css/geo.css ใช้เป็นหมึกบนพื้นเขียว
+       จึงถือว่าเป็นค่าประจำโปรเจกต์อยู่แล้ว แค่ยังไม่ถูกยกขึ้นเป็น token */
+    --green-2:#34c98a;
+    --on-green:#08251a;
+
+    /* การ์ดลิงก์เป็นพื้นสว่างบนหน้ามืด ใช้คู่สีของธีมสว่างจาก tokens.css */
+    --card:#f5f7f9;
+    --card-ink:#12161c;
+  }
+
   *{box-sizing:border-box;margin:0;padding:0;}
   body{
     min-height:100vh;
     display:flex;flex-direction:column;align-items:center;
     gap:22px;
     padding:56px 20px 32px;
-    background:linear-gradient(148deg,#4a5568 0%,#2c3440 46%,#171b22 100%);
-    color:#f5f8fc;
+    background:linear-gradient(148deg,var(--bg-hi) 0%,var(--bg) 46%,var(--bg-lo) 100%);
+    color:var(--ink);
     font-family:'Leelawadee UI','Noto Sans Thai','Segoe UI',sans-serif;
     text-align:center;
   }
@@ -26,13 +64,13 @@
   .avatar{
     width:92px;height:92px;border-radius:50%;
     display:flex;align-items:center;justify-content:center;
-    background:linear-gradient(180deg,#88f4c5,#34c98a);
+    background:linear-gradient(180deg,var(--green),var(--green-2));
     box-shadow:0 0 0 4px rgba(255,255,255,.1), 0 14px 34px -10px rgba(78,227,160,.55);
   }
-  .avatar svg{width:38px;height:38px;color:#08251a;}
+  .avatar svg{width:38px;height:38px;color:var(--on-green);}
 
   h1{font-size:1.4rem;font-weight:800;letter-spacing:-.01em;}
-  .bio{color:#94a2b3;font-size:.9rem;max-width:32ch;line-height:1.5;}
+  .bio{color:var(--ink-soft);font-size:.9rem;max-width:32ch;line-height:1.5;}
 
   /* ---------- ตัวเลือกอุปกรณ์ ----------
      เลือกที่นี่ที่เดียว แล้วทุกหน้าอ่านค่าเดียวกันจาก localStorage
@@ -52,7 +90,7 @@
     content:'';position:absolute;z-index:0;
     top:5px;bottom:5px;left:5px;width:calc(50% - 5px);
     border-radius:100px;
-    background:linear-gradient(180deg,#88f4c5,#34c98a);
+    background:linear-gradient(180deg,var(--green),var(--green-2));
     box-shadow:0 6px 16px -8px rgba(78,227,160,.7);
     transition:transform .22s cubic-bezier(.4,0,.2,1);
   }
@@ -61,17 +99,17 @@
     position:relative;z-index:1;flex:1;
     padding:11px 10px;border:0;background:none;
     font:inherit;font-size:.88rem;font-weight:700;
-    color:#94a2b3;cursor:pointer;
+    color:var(--ink-soft);cursor:pointer;
     border-radius:100px;
     transition:color .22s ease;
     -webkit-tap-highlight-color:transparent;
   }
   :root[data-device="desktop"] .device button[data-device="desktop"],
-  :root[data-device="mobile"]  .device button[data-device="mobile"]{color:#08251a;}
-  .device button:focus-visible{outline:2px solid #88f4c5;outline-offset:3px;}
+  :root[data-device="mobile"]  .device button[data-device="mobile"]{color:var(--on-green);}
+  .device button:focus-visible{outline:2px solid var(--green);outline-offset:3px;}
 
   .device-note{
-    color:#6b7785;font-size:.78rem;line-height:1.5;
+    color:var(--ink-faint);font-size:.78rem;line-height:1.5;
     max-width:34ch;margin-top:-12px;
   }
 
@@ -82,7 +120,7 @@
   .links a{
     display:flex;align-items:center;justify-content:center;gap:10px;
     padding:18px 22px;border-radius:100px;
-    background:#f5f7fa;color:#12161c;
+    background:var(--card);color:var(--card-ink);
     text-decoration:none;font-weight:700;font-size:1rem;
     box-shadow:0 10px 24px -10px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.6);
     transition:transform .15s ease, box-shadow .15s ease;
@@ -98,7 +136,7 @@
   footer{
     margin-top:14px;
     display:inline-flex;align-items:center;gap:6px;
-    color:#6b7785;font-size:.8rem;
+    color:var(--ink-faint);font-size:.8rem;
     padding:6px 14px;border-radius:100px;
     background:rgba(255,255,255,.06);
   }
