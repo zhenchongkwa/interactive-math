@@ -3611,6 +3611,10 @@ graphPanel.addEventListener('pointerdown', e => {
   graphDrag = {
     x: e.clientX,
     y: e.clientY,
+    // Where it started, kept so that letting go without having moved can be told from a drag
+    // — that is a tap, and a tap reads the curve rather than carrying the frame nowhere.
+    fromX: e.clientX,
+    fromY: e.clientY,
     perPixel: (2 * graphRange) / graphParts.svg.getBoundingClientRect().width,
   };
   graphPanel.classList.add('dragging');
@@ -3653,15 +3657,14 @@ graphPanel.addEventListener('dblclick', () => {
 // the curve. The reading is rounded to a tenth of a grid square — fine enough to be worth
 // having, coarse enough not to flicker through a new digit every pixel — so it follows the
 // zoom, a square being worth less the further in the frame is wound.
-graphPanel.addEventListener('pointermove', e => {
-  if (graphDrag !== null) return;             // a drag is moving the frame, not reading it
+function readCurveAt(x, y) {
   if (graphParts === null || currentGraph === null) return;
   const parts = graphParts;
 
   const box = parts.svg.getBoundingClientRect();
   const on = nearestOnCurve(
-    (e.clientX - box.left) * (GRAPH_WIDTH / box.width),
-    (e.clientY - box.top) * (GRAPH_HEIGHT / box.height),
+    (x - box.left) * (GRAPH_WIDTH / box.width),
+    (y - box.top) * (GRAPH_HEIGHT / box.height),
   );
   if (on === null) return hideGraphPointer();
 
@@ -3699,8 +3702,23 @@ graphPanel.addEventListener('pointermove', e => {
 
   parts.readX.value.textContent = readX;
   parts.readY.value.textContent = readY;
+}
+
+graphPanel.addEventListener('pointermove', e => {
+  if (graphDrag !== null) return;             // a drag is moving the frame, not reading it
+  readCurveAt(e.clientX, e.clientY);
 });
 graphPanel.addEventListener('pointerleave', hideGraphPointer);
+
+/* A finger laid on the plot is a drag, so the reading above never happens on a phone: the
+   frame moves under it and the readout is skipped for exactly that reason. A press that goes
+   nowhere is not a drag though, and that is a tap — so a tap reads the curve where it landed,
+   which is the only way the coordinates are reachable without a hovering cursor. */
+graphPanel.addEventListener('pointerup', e => {
+  if (graphDrag === null || !onPhone) return;
+  if (Math.hypot(e.clientX - graphDrag.fromX, e.clientY - graphDrag.fromY) > CARRY_SLOP) return;
+  readCurveAt(e.clientX, e.clientY);
+});
 
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const lettersDiv = document.getElementById('letters');

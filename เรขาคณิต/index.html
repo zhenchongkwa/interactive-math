@@ -307,11 +307,24 @@
           <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
         </svg>
       </span>
-      <h2 id="geoHelpTitle">ปุ่มลัดทั้งหมด</h2>
-      <p>เกือบทุกอย่างในกระดาษนี้สั่งจากคีย์บอร์ด กดค้างไว้แล้วดูว่าอะไรเปลี่ยน</p>
+      <!-- หัวข้อกับคำนำสลับตามอุปกรณ์ด้วย CSS ล้วน (geo.css) เหมือนคู่ sun/moon
+           หน้านี้บนมือถือไม่ได้สั่งด้วยคีย์บอร์ดสักปุ่ม คำนำเดิมจึงเป็นคำโกหก -->
+      <h2 id="geoHelpTitle"><span class="hint-desk">ปุ่มลัดทั้งหมด</span><span class="hint-touch">วิธีใช้ทั้งหมด</span></h2>
+      <p class="hint-desk">เกือบทุกอย่างในกระดาษนี้สั่งจากคีย์บอร์ด กดค้างไว้แล้วดูว่าอะไรเปลี่ยน</p>
+      <p class="hint-touch">ทุกอย่างสั่งจากแถบปุ่มด้านล่างจอ เลือกโหมดแล้วแตะบนกระดาษ</p>
     </div>
 
-    <div class="geo-keys">
+    <!-- ============================================
+         สองชุด แสดงทีละชุดตามอุปกรณ์
+
+         แยกเป็นคนละ .geo-keys ทั้งก้อน ไม่ใช่ซ่อนทีละ .gk-group ข้างใน เพราะ
+         .gk-group:first-child / :nth-child(2) ใน geo.css เป็นตัวตัดระยะขอบบนของ
+         สองกลุ่มแถวแรก — ถ้าซ่อนบางกลุ่มไว้ในก้อนเดียวกัน CSS ยังนับกลุ่มที่ซ่อนอยู่ดี
+         แล้วกลุ่มที่โผล่จริงจะได้ระยะผิด สองกลุ่มที่เหมือนกันทั้งสองฝั่ง (หน่วยวัด)
+         เขียนซ้ำหกบรรทัด ถูกกว่าการไปแก้กฎ nth-child ให้ซับซ้อน
+         ============================================ -->
+
+    <div class="geo-keys hint-desk">
       <div class="gk-group">
         <h3>กดค้าง</h3>
         <div class="gk-row">
@@ -381,6 +394,97 @@
         <div class="gk-row">
           <span class="gk-keys">ที่จับวงกลม</span>
           <span class="gk-desc">โผล่มุมบนขวาของสิ่งที่เลือก ลากเพื่อหมุน</span>
+        </div>
+      </div>
+
+      <div class="gk-group">
+        <h3>หน่วยวัด</h3>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>10 px</kbd></span>
+          <span class="gk-desc">เท่ากับ 1 เซนติเมตรบนกระดาษ</span>
+        </div>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>100</kbd></span>
+          <span class="gk-desc">จำนวนจุดสูงสุดที่สร้างได้ในกระดาษเดียว</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- ชุดเดียวกัน เขียนใหม่สำหรับนิ้ว ---------- -->
+    <div class="geo-keys hint-touch">
+      <div class="gk-group">
+        <h3>แถบปุ่มโหมด</h3>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>วางจุด</kbd></span>
+          <span class="gk-desc">แตะกระดาษเพื่อวางจุด — แตะบนเส้นโค้งจะเกาะลงบนเส้นนั้น</span>
+        </div>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>เลือก</kbd></span>
+          <span class="gk-desc">แตะจุดเพื่อเลือก แตะจุดที่สองเพื่อลากเส้นเชื่อม</span>
+        </div>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>วัดค่า</kbd></span>
+          <span class="gk-desc">แสดงความยาว พื้นที่ และมุมของสิ่งที่แตะ</span>
+        </div>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>แก้ค่า</kbd></span>
+          <span class="gk-desc">แตะที่ตัวเลข หรือแตะที่ด้าน/รูปตรงๆ เพื่อกรอกค่าทับ</span>
+        </div>
+      </div>
+
+      <div class="gk-group">
+        <h3>ปุ่มคำสั่ง</h3>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>🗑</kbd></span>
+          <span class="gk-desc">ลบสิ่งที่เลือกไว้</span>
+        </div>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>↺</kbd></span>
+          <span class="gk-desc">ย้อนกลับ</span>
+        </div>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>⧉</kbd><span class="plus">/</span><kbd>📋</kbd></span>
+          <span class="gk-desc">คัดลอกและวางสิ่งที่เลือกไว้</span>
+        </div>
+      </div>
+
+      <div class="gk-group">
+        <h3>ตารางเส้น</h3>
+        <div class="gk-row">
+          <span class="gk-keys"><kbd>‖</kbd><span class="plus">/</span><kbd>=</kbd></span>
+          <span class="gk-desc">เปิด/ปิดเส้นตั้งและเส้นนอน กดซ้ำเพื่อปิด</span>
+        </div>
+        <div class="gk-row">
+          <span class="gk-keys">ไม้บรรทัด</span>
+          <span class="gk-desc">ปุ่มขวาสุดของแถบล่าง — ตั้งระยะห่างของเส้นได้ที่นั่น</span>
+        </div>
+      </div>
+
+      <div class="gk-group">
+        <h3>นิ้ว</h3>
+        <div class="gk-row">
+          <span class="gk-keys">ลากบนที่ว่าง</span>
+          <span class="gk-desc">เลื่อนกระดาษ — ถ้าอยู่โหมด "เลือก" จะเป็นกรอบเลือกหลายชิ้นแทน</span>
+        </div>
+        <div class="gk-row">
+          <span class="gk-keys">ลากที่จุด</span>
+          <span class="gk-desc">ย้ายจุดหรือชิ้นที่เลือกไว้ทั้งหมด</span>
+        </div>
+        <div class="gk-row">
+          <span class="gk-keys">ที่จับวงกลม</span>
+          <span class="gk-desc">โผล่มุมบนขวาของสิ่งที่เลือก ลากเพื่อหมุน</span>
+        </div>
+      </div>
+
+      <div class="gk-group">
+        <h3>แถบเครื่องมือ</h3>
+        <div class="gk-row">
+          <span class="gk-keys">แถบล่างสุด</span>
+          <span class="gk-desc">แบ่งด้าน · วาดรูปร่าง · ขยาย/ย่อ · ตั้งระยะตาราง</span>
+        </div>
+        <div class="gk-row">
+          <span class="gk-keys">ลากรูปร่าง</span>
+          <span class="gk-desc">เลือกแบบแล้วลากบนที่ว่างเพื่อกำหนดขนาด</span>
         </div>
       </div>
 

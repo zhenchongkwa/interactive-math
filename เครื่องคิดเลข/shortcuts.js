@@ -14,7 +14,14 @@
   /* ---------- what the card says ----------
      Each row is a set of key chips and what pressing them does. Keeping it as data rather
      than markup means a row is added by writing one line, the way the A-Z keys are built
-     from a string in script.js. */
+     from a string in script.js.
+
+     A section may carry a `touch` version of itself — its own title and its own rows — and on
+     a phone that is what is shown in its place. It is not an extra section appended to the
+     end: a reader on a phone has no Ctrl, no Shift, no wheel and nothing to hover, so a card
+     that lists those and then explains underneath what they became would be a card three
+     quarters of which cannot be pressed. Sections with no `touch` (the keypad ones) are the
+     same on both, and are written once. */
 
   var SECTIONS = [
     {
@@ -27,7 +34,20 @@
         { k: ['คลิก'], d: 'ที่ = ซึ่งสว่างอยู่ — คิดคำตอบ; กดซ้ำเพื่อถอนออก' },
         { k: ['ชี้'], d: 'ที่ป้าย "N คำตอบ" — รายการคำตอบทั้งหมดจะหล่นลงมา' },
         { k: ['คลิก'], d: 'ที่พื้นที่ว่างของจอ — เลิกเล็งคีย์แพด' }
-      ]
+      ],
+      touch: {
+        title: 'บนจอแสดงผล',
+        rows: [
+          { k: ['ลาก'], d: 'ย้ายบล็อกไปวางตรงไหนก็ได้' },
+          { k: ['แตะ'], d: 'ที่บล็อก — ยกค้างไว้ แล้วแตะที่หมายเพื่อวาง' },
+          { k: ['ยกพจน์'], d: 'เปิดโหมดนี้แล้วไฮไลต์เขียวจะบอกว่าจะยกทั้งพจน์ไหน' },
+          { k: ['ยกพจน์', 'ลาก'], d: 'ยกทั้งพจน์; ข้าม = แล้วเครื่องหมายกลับข้างให้เอง' },
+          { k: ['ยกพจน์', 'ลาก'], d: 'ที่ตัวส่วน — ยกตัวหารออก; ข้าม = แล้วกลายเป็นตัวคูณ' },
+          { k: ['แตะ'], d: 'ที่ = ซึ่งสว่างอยู่ — คิดคำตอบ; แตะซ้ำเพื่อถอนออก' },
+          { k: ['แตะ'], d: 'ที่ป้าย "N คำตอบ" — รายการคำตอบทั้งหมดจะหล่นลงมา; แตะซ้ำเพื่อเก็บ' },
+          { k: ['แตะ'], d: 'ที่พื้นที่ว่างของจอ — เลิกเล็งคีย์แพด' }
+        ]
+      }
     },
     {
       title: 'Ctrl — แก้ค่าในบล็อก',
@@ -40,9 +60,23 @@
         { k: ['Ctrl', 'คลิก'], d: 'ที่วงเล็บของ (3×3) — ยุบกลับเป็น 3²' },
         { k: ['Ctrl', 'คลิก'], d: 'ที่ตัวอักษรเขียว — แสดง/ซ่อนคำตอบของมัน' },
         { k: ['Ctrl', 'คลิก'], d: 'ที่เลขตัวถัดไปขณะเล็งเลขอยู่ — รวมเป็นเลขเดียว (4,5 → 45)' }
-      ]
+      ],
+      touch: {
+        title: 'โหมด "แก้ค่า" — แก้ค่าในบล็อก',
+        rows: [
+          { k: ['แตะ'], d: 'เล็งคีย์แพดไปที่ช่องนั้น แล้วพิมพ์ทับได้เลย' },
+          { k: ['แตะ'], d: 'ที่เส้นเศษส่วน — เขียนกลับเป็นทศนิยม' },
+          { k: ['แตะ'], d: 'ที่ทศนิยม — เขียนเป็นเศษส่วน (0.5 → ½)' },
+          { k: ['แตะ'], d: 'ที่เลขชี้กำลังซึ่งเล็งอยู่แล้ว — 9² คลี่เป็น (9×9)' },
+          { k: ['แตะ'], d: 'ที่วงเล็บของ (3×3) — ยุบกลับเป็น 3²' },
+          { k: ['แตะ'], d: 'ที่ตัวอักษรเขียว — แสดง/ซ่อนคำตอบของมัน' },
+          { k: ['แตะ'], d: 'ที่เลขตัวถัดไปขณะเล็งเลขอยู่ — รวมเป็นเลขเดียว (4,5 → 45)' }
+        ]
+      }
     },
     {
+      /* The keypad is the one part of this machine that was always just buttons, so it reads
+         the same whichever device is holding it. */
       title: 'ปุ่มที่เขียนทับบล็อกเดิม',
       rows: [
         { k: ['x²'], d: 'ยกกำลังบนบล็อกเดิม ไม่ใช่สร้างบล็อกใหม่ — กดซ้ำได้' },
@@ -60,20 +94,17 @@
         { k: ['ลาก'], d: 'เลื่อนกรอบไปดูที่อื่น' },
         { k: ['ดับเบิลคลิก'], d: 'กลับไปกรอบตั้งต้น' },
         { k: ['ชี้'], d: 'ที่เส้น — อ่านพิกัดตรงจุดนั้น' }
-      ]
-    },
-    {
-      /* This card is a list of keys, which is exactly what a phone has none of. The bar above
-         the display is where those keys went, so a reader who came here looking for them is
-         told so first — before the four sections that all begin "hold ctrl". */
-      title: 'บนมือถือ',
-      only: 'mobile',
-      rows: [
-        { k: ['ปกติ'], d: 'ลากบล็อกทีละตัว หรือแตะยกแล้วแตะที่หมาย' },
-        { k: ['ยกพจน์'], d: 'เท่ากับกด Shift ค้าง — ทุกอย่างในหัวข้อ "บนจอแสดงผล" ใช้ได้หมด' },
-        { k: ['แก้ค่า'], d: 'เท่ากับกด Ctrl ค้าง — ทุกอย่างในหัวข้อ "Ctrl" ใช้ได้หมด' },
-        { k: ['+ − ⟲'], d: 'ปุ่มบนหัวกราฟ แทนล้อเมาส์และดับเบิลคลิก' }
-      ]
+      ],
+      touch: {
+        title: 'กราฟ (โผล่เองเมื่อมี 2 ตัวแปร)',
+        rows: [
+          // ป้ายเดียวไม่ใช่สองป้าย: ตัวคั่นระหว่างป้ายคือ "+" ซึ่งจะอ่านออกมาเป็น "++−"
+          { k: ['+ −'], d: 'ปุ่มบนหัวกราฟ — ซูมเข้า-ออก' },
+          { k: ['ลาก'], d: 'เลื่อนกรอบไปดูที่อื่น' },
+          { k: ['⟲'], d: 'ปุ่มบนหัวกราฟ — กลับไปกรอบตั้งต้น' },
+          { k: ['แตะ'], d: 'ที่เส้น — อ่านพิกัดตรงจุดนั้น' }
+        ]
+      }
     },
     {
       title: 'เพิ่มเติม',
@@ -82,7 +113,17 @@
         { k: ['⌷'], d: 'ปุ่มถัดไป — สลับโหมดคอมพิวเตอร์/มือถือ' },
         { k: ['⌘'], d: 'บน Mac ใช้แทน Ctrl ได้ทุกที่' },
         { k: ['Esc'], d: 'ปิดหน้าต่างนี้' }
-      ]
+      ],
+      touch: {
+        title: 'เพิ่มเติม',
+        rows: [
+          // ตัวคั่นระหว่างป้ายแปลว่า "กดพร้อมกัน" ซึ่งไม่ใช่ความหมายของสามโหมดนี้
+          { k: ['แถบโหมด'], d: 'เหนือจอ — ปกติ / ยกพจน์ / แก้ค่า เลือกได้ทีละอัน ใต้ปุ่มมีคำอธิบายของโหมดที่เลือกอยู่' },
+          { k: ['☀'], d: 'ปุ่มมุมขวาบน — สลับโหมดสว่าง/มืด (จำค่าที่เลือกไว้)' },
+          { k: ['⌷'], d: 'ปุ่มข้างกัน — กลับไปโหมดคอมพิวเตอร์' },
+          { k: ['แตะนอกหน้าต่าง'], d: 'ปิดหน้าต่างนี้' }
+        ]
+      }
     }
   ];
 
@@ -210,10 +251,12 @@
   head.appendChild(shut);
   panel.appendChild(head);
 
-  SECTIONS.forEach(function (section) {
-    // A section marked for one device is left out on the other, rather than shown greyed or
-    // qualified: a card of shortcuts is only useful if everything on it can be pressed.
-    if (section.only === 'mobile' && !(w.IM && w.IM.isMobile)) return;
+  var onPhone = !!(w.IM && w.IM.isMobile);
+
+  SECTIONS.forEach(function (whole) {
+    // On a phone a section speaks in taps and modes where it has been written to; where it
+    // has not, it was the same on both to begin with.
+    var section = onPhone && whole.touch ? whole.touch : whole;
 
     var title = document.createElement('h3');
     title.className = 'sheet-title';

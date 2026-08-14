@@ -691,10 +691,15 @@ input{-webkit-user-select:text;user-select:text;}
 .gm-acts button{width:44px;padding:0;justify-content:center;}
 .gm-sep{width:1px;height:24px;margin:0 2px;background:var(--chrome-line);flex:none;}
 
-/* ข้อความใบ้: ฉบับคีย์บอร์ดกับฉบับนิ้ว สลับกันด้วย CSS ล้วน */
-.hint-touch{display:none;}
-:root[data-device="mobile"] .hint-desk{display:none;}
-:root[data-device="mobile"] .hint-touch{display:inline;}
+/* ---------- คู่ข้อความ/ก้อนเนื้อหา ฉบับคีย์บอร์ดกับฉบับนิ้ว ----------
+   ใช้ทั้งกับข้อความใบ้ตอนเปิดครั้งแรก และกับหน้าต่างวิธีใช้ทั้งหน้าต่าง
+
+   กฎที่นี่ "ซ่อน" ฝั่งที่ไม่ตรงกับอุปกรณ์เท่านั้น ไม่มีกฎไหนไปตั้ง display ให้ฝั่งที่แสดง
+   โดยตั้งใจ เพราะคู่พวกนี้เป็นคนละชนิดกัน: .geo-keys เป็น grid, <p> เป็น block,
+   <span> ในหัวข้อเป็น inline — ถ้าบังคับค่าเดียวให้ทั้งหมด ตารางปุ่มจะพังทันที
+   ครอบได้ทั้งสองทางเพราะ data-device ถูกตั้งเป็นค่าใดค่าหนึ่งเสมอ (ดู inline script ใน <head>) */
+:root[data-device="desktop"] .hint-touch{display:none;}
+:root[data-device="mobile"]  .hint-desk {display:none;}
 
 /* และต้องขยับขึ้นไปอยู่เหนือแผงควบคุมสองชั้นนี้ ไม่ใช่ใต้มัน
    แถบโหมดเริ่มที่ 78px และสูงราว 104px (สองแถว 44px + ช่องไฟ + ขอบ) จึงจบราว 182px */
