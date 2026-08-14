@@ -216,6 +216,59 @@
   </div>
 </div>
 
+<!-- ============================================
+     แถบปุ่มโหมด — โหมดมือถือเท่านั้น (app.js ถอด hidden ออกให้เมื่อ IM.isMobile)
+     แถวบน = โหมดที่ค้างไว้ แทน Ctrl / Shift / ปุ่ม 1 ที่นิ้วกดไม่ได้
+     แถวล่าง = คำสั่งที่กดแล้วทำเลย แทน Delete / Ctrl+Z / Ctrl+C / Ctrl+V / X / Y
+     data-mode และ data-act ถูกอ่านจาก app.js ห้ามเปลี่ยนชื่อ
+     ============================================ -->
+<div id="geoModes" class="geo-modes" hidden>
+  <div class="gm-row" role="group" aria-label="โหมดการแตะ">
+    <button type="button" data-mode="place" aria-pressed="false"
+            title="วางจุด — แตะกระดาษเพื่อวางจุดตรงนั้น แตะบนเส้นโค้งจะเกาะลงบนเส้น">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="8.4"/></svg>
+      วางจุด
+    </button>
+    <!-- ป้ายสั้นๆ เพราะสี่ปุ่มต้องอยู่ในความกว้าง 375px ให้ครบโดยไม่ต้องเลื่อน
+         ความหมายเต็มอยู่ใน title (การเชื่อมด้านคือผลของการแตะจุดที่สอง) -->
+    <button type="button" data-mode="select" aria-pressed="false"
+            title="เลือก — แตะจุดที่สองเพื่อเชื่อมเป็นด้าน ลากที่ว่างเพื่อเลือกหลายชิ้น">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="18" r="2.6"/><circle cx="18" cy="6" r="2.6"/><path d="M7.9 16.1 16.1 7.9"/></svg>
+      เลือก
+    </button>
+    <button type="button" data-mode="measure" aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 15.5 15.5 3l5.5 5.5L8.5 21z"/><path d="M7 11.5l2 2M10.5 8l2 2M14 4.5l2 2"/></svg>
+      วัดค่า
+    </button>
+    <button type="button" data-mode="edit" aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-3-3L5 17z"/><path d="M14.5 6.5l3 3"/></svg>
+      แก้ค่า
+    </button>
+  </div>
+
+  <div class="gm-row gm-acts" role="group" aria-label="คำสั่ง">
+    <button type="button" data-act="del" aria-label="ลบสิ่งที่เลือก" title="ลบสิ่งที่เลือก">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13"/></svg>
+    </button>
+    <button type="button" data-act="undo" aria-label="ย้อนกลับ" title="ย้อนกลับ">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h10a5.5 5.5 0 1 1 0 11h-3"/><path d="M7.5 5.5 4 9l3.5 3.5"/></svg>
+    </button>
+    <button type="button" data-act="copy" aria-label="คัดลอก" title="คัดลอก">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 5.5H6a2 2 0 0 0-2 2V16"/></svg>
+    </button>
+    <button type="button" data-act="paste" aria-label="วาง" title="วาง">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 5V3.6h6V5"/><path d="M8.5 12h7M8.5 16h4.5"/></svg>
+    </button>
+    <span class="gm-sep" aria-hidden="true"></span>
+    <button type="button" data-act="gridy" aria-pressed="false" aria-label="เส้นตั้ง" title="เส้นตั้ง (แกน Y)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3v18M16 3v18"/></svg>
+    </button>
+    <button type="button" data-act="gridx" aria-pressed="false" aria-label="เส้นนอน" title="เส้นนอน (แกน X)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h18M3 16h18"/></svg>
+    </button>
+  </div>
+</div>
+
 <!-- app.js เติมข้อความแล้ว toggle .show ให้เอง -->
 <div id="notice" class="notice"></div>
 
@@ -224,7 +277,10 @@
      แล้วจำไว้ใน localStorage จะได้ไม่ทวงซ้ำ
      ============================================ -->
 <div id="geoHint" class="geo-hint">
-  <span>กด <kbd>Ctrl</kbd> เพื่อเปิดแถบเครื่องมือ · <kbd>1</kbd> วางจุด · <kbd>Shift</kbd> ดูค่าที่วัดได้</span>
+  <!-- สองข้อความ สลับกันแสดงด้วย CSS จาก [data-device] ล้วน (geo.css) ไม่ต้องรอ JS
+       ข้อความคีย์บอร์ดไม่มีความหมายเลยบนนิ้ว ซึ่งกดปุ่มพวกนี้ไม่ได้สักปุ่ม -->
+  <span class="hint-desk">กด <kbd>Ctrl</kbd> เพื่อเปิดแถบเครื่องมือ · <kbd>1</kbd> วางจุด · <kbd>Shift</kbd> ดูค่าที่วัดได้</span>
+  <span class="hint-touch">แตะกระดาษเพื่อวางจุด · เปลี่ยนโหมดได้ที่แถบด้านล่าง · ลากที่ว่างเพื่อเลื่อนกระดาษ</span>
 </div>
 
 <!-- ============================================

@@ -42,6 +42,25 @@
   var MERGE_DIST = POINT_R * 2;               // ใกล้กว่านี้ถือว่าจุดทับกัน ให้ยุบเป็นจุดเดียว
   var MARQUEE_MIN  = 3;                       // ลากสั้นกว่านี้ถือว่าแค่คลิก
 
+  /* ---------- โหมดมือถือ ----------
+     ทุกอย่างในแอปนี้เดิมผูกกับคีย์บอร์ด: Ctrl เลือก/เชื่อม, Shift ดูค่าที่วัดได้,
+     1 วางจุด, Delete ลบ นิ้วไม่มีปุ่มพวกนั้นสักปุ่ม จึงมีแถบปุ่มบนจอมาตั้งธงพวกนี้แทน
+     (โครงสร้างอยู่ใน index.html สไตล์อยู่ใน geo.css การผูกอยู่ท้ายไฟล์นี้)
+
+     ธงถูก "หรือ" เข้ากับปุ่มจริงเสมอ ไม่ได้แทนที่ ทั้งสองทางจึงใช้ร่วมกันได้
+     และโค้ดเดิมทุกบรรทัดที่อ่าน ctrlOn/shiftOn ไม่ต้องรู้ว่ามาจากทางไหน */
+  var touchMods = { ctrl: false, shift: false };
+  var placeMode = false;                      // แตะกระดาษเพื่อวางจุด — แทนปุ่ม 1
+  var onPhone   = !!(window.IM && window.IM.isMobile);
+
+  function ctrlOn(e)  { return e.ctrlKey  || touchMods.ctrl; }
+  function shiftOn(e) { return e.shiftKey || touchMods.shift; }
+
+  /* นิ้วบังพื้นที่ราว 44px และเล็งหยาบกว่าเมาส์มาก ระยะที่ถือว่า "จับโดน" จึงต้องกว้างขึ้น
+     ขยายเฉพาะระยะจับ ไม่แตะ POINT_R ซึ่งเป็นขนาดที่วาดจริง จุดจึงยังหน้าตาเดิมเป๊ะ
+     และ MERGE_DIST ที่คิดจาก POINT_R ก็ไม่ขยับตาม — ไม่งั้นจุดคนละจุดจะยุบรวมกันเอง */
+  if (onPhone) { HIT_POINT = 20; HIT_EDGE = 13; }
+
   /* ---------- จานสี ----------
      ทุกสีที่วาดลง canvas มาจาก CSS custom property ใน assets/css/geo.css ที่เดียว
      สีของรูปกับสีของแถบเครื่องมือรอบข้างจึงสลับธีมไปพร้อมกันเสมอ
@@ -1432,8 +1451,10 @@
   }
 
   // ---------- แถบเครื่องมือ ----------
+  // เงื่อนไขเดิมทั้งสามข้อไม่มีข้อไหนเป็นจริงได้บนนิ้วเลย: ไม่มี Ctrl ไม่มี hover
+  // แถบจึงจมอยู่ที่ opacity .42 ตลอดกาลจนกว่าจะเผลอไปแตะโดน — ในโหมดมือถือให้ค้างไว้เลย
   function updateToolbar() {
-    toolbar.classList.toggle('show', ctrlHeld || !!activeTool || overToolbar);
+    toolbar.classList.toggle('show', onPhone || ctrlHeld || !!activeTool || overToolbar);
   }
 
   // เครื่องมือที่กินการคลิกบนพื้นที่วาด (resize ใช้แค่ช่องกรอก ไม่กิน)
@@ -1713,6 +1734,28 @@
     return { x: sx, y: sy };
   }
 
+  /* วางจุดหนึ่งจุดตรงพิกัดที่บอก พร้อมทุกอย่างที่ต้องทำรอบๆ มัน
+     แยกออกมาจาก keydown ของปุ่ม 1 เพราะโหมดมือถือต้องเรียกด้วยพิกัดที่นิ้วแตะ
+     ปุ่ม 1 ใช้ตำแหน่งเมาส์ที่ค้างอยู่ได้เพราะเมาส์ "ชี้" อยู่ตลอดเวลา ส่วนนิ้วไม่ชี้อะไรเลย
+     จนกว่าจะแตะ — mouse.x/y ตอนนั้นจึงเป็นค่าค้างจากที่แตะครั้งก่อน ไม่ใช่ที่ที่ตั้งใจ */
+  function placePointAt(x, y) {
+    if (!canAddPoints(1)) return false;
+
+    // แตะโดนเส้นรอบวงอยู่ = วางจุดเกาะลงบนเส้นนั้นเลย
+    var ht = hitTest(x, y);
+    if (ht.type === 'circle' || ht.type === 'arc') {
+      pushUndo();
+      if (addPointOnCircle(ht) !== null) settle();
+      return true;
+    }
+
+    var g = snapToGuides(x, y);
+    pushUndo();
+    addPoint(g.x, g.y);
+    settle();                                  // วางทับจุดเดิมก็ยุบรวมให้เลย
+    return true;
+  }
+
   // ประตูเดียวสำหรับสร้างจุด คืน null เมื่อเต็มเพดาน
   function addPoint(x, y) {
     if (points.length >= POINT_MAX) { notifyFull(); return null; }
@@ -1756,7 +1799,8 @@
   }
 
   // ---------- ที่จับหมุนสิ่งที่เลือก ----------
-  var ROT_GAP = 30, ROT_HIT = 12;
+  // ที่จับกว้าง 12px จิ้มด้วยนิ้วแทบไม่โดน และถ้าดันมันออกห่างกว่าเดิมด้วยจะเล็งง่ายขึ้นอีก
+  var ROT_GAP = onPhone ? 40 : 30, ROT_HIT = onPhone ? 24 : 12;
 
   // จุด/วง ทั้งหมดที่อยู่ในสิ่งที่เลือก ใช้ทั้งหาขอบเขตและหมุน
   function selectionTargets() {
@@ -2041,12 +2085,35 @@
     return { x: e.clientX - rect.left - camera.x, y: e.clientY - rect.top - camera.y };
   }
 
+  /* drag / panning / rotating / creating / marquee เป็นตัวแปรเดี่ยวตัวละหนึ่ง ไม่ผูกกับ pointerId
+     นิ้วที่สองที่แตะลงมาระหว่างลากจะเข้ามาเขียนทับ panning.lastClientX/Y แล้วกล้องกระโดด
+     จึงรับเฉพาะนิ้วที่เริ่มลากไว้ ตลอดช่วงที่ยังลากอยู่ — ท่าสองนิ้วไม่มีในแอปนี้อยู่แล้ว
+
+     เงื่อนไขผูกกับ "กำลังลากอยู่จริงไหม" ไม่ใช่กับ id ที่ค้างไว้เฉยๆ โดยตั้งใจ:
+     pointerup หายไปได้จริง (สลับแท็บกลางคัน เบราว์เซอร์กลืน event ไป) ถ้ายึด id ไว้
+     ตลอดกาลเมื่อนั้น แอปจะไม่รับนิ้วอีกเลยจนกว่าจะรีเฟรช แบบนี้พอปล่อยแล้วก็หายเอง */
+  var activePointer = null;
+
+  function dragging() {
+    return !!(drag || panning || rotating || creating || marquee);
+  }
+
   canvas.addEventListener('pointerdown', function (e) {
     if (e.button !== 0) return;
+    if (dragging() && e.pointerId !== activePointer) return;
+    activePointer = e.pointerId;
     e.preventDefault();
 
     var m = localPos(e);
-    ctrlHeld = e.ctrlKey;
+    ctrlHeld = ctrlOn(e);
+
+    // โหมดวางจุด: แตะที่ไหนก็วางจุดตรงนั้น ไม่ไปเลือกหรือลากอะไรทั้งนั้น
+    if (placeMode) {
+      closeEditor();
+      mouse.x = m.x; mouse.y = m.y;
+      placePointAt(m.x, m.y);
+      return;
+    }
 
     // เครื่องมือแบ่ง: ใช้ได้ทั้งกับด้านตรง วงรี และช่วงโค้งของวง
     if (activeTool === 'bisect') {
@@ -2084,7 +2151,8 @@
     }
 
     // Shift+Ctrl+คลิก = กรอกค่า จิ้มที่ตัวเลขก็ได้ จิ้มที่ตัวจุด/ด้าน/รูปเลยก็ได้
-    if (e.shiftKey && e.ctrlKey) {
+    // (บนมือถือคือปุ่ม "แก้ค่า" ซึ่งตั้งธงทั้งสองพร้อมกัน)
+    if (shiftOn(e) && ctrlOn(e)) {
       var lab = hitLabel(m.x, m.y) || labelFor(hitTest(m.x, m.y));
       if (lab) { openEditor(lab); return; }    // return กันไม่ให้ไปเลือก/ลากของที่อยู่ตรงนั้น
     }
@@ -2094,11 +2162,11 @@
     try { canvas.setPointerCapture(e.pointerId); } catch (err) {}   // ลากต่อได้แม้เมาส์ออกนอกกรอบ
 
     mouse.x = m.x; mouse.y = m.y;
-    shiftHeld = e.shiftKey;
+    shiftHeld = shiftOn(e);
 
     var hit = hitTest(m.x, m.y);
 
-    if (e.ctrlKey) {
+    if (ctrlOn(e)) {
       if (hit.type === 'point') {
         var last = selLast();
         if (last && last.type === 'point' && last.id !== hit.id) {
@@ -2143,10 +2211,11 @@
   });
 
   canvas.addEventListener('pointermove', function (e) {
+    if (dragging() && e.pointerId !== activePointer) return;
     var m = localPos(e);
     mouse.x = m.x; mouse.y = m.y;
-    shiftHeld = e.shiftKey;
-    if (ctrlHeld !== e.ctrlKey) { ctrlHeld = e.ctrlKey; updateToolbar(); }
+    shiftHeld = shiftOn(e);
+    if (ctrlHeld !== ctrlOn(e)) { ctrlHeld = ctrlOn(e); updateToolbar(); }
 
     if (rotating) { updateRotate(m); return; }
     if (creating) { creating.x1 = m.x; creating.y1 = m.y; return; }
@@ -2180,6 +2249,9 @@
 
   function endDrag(e) {
     if (e && e.pointerId !== undefined) {
+      // นิ้วอื่นปล่อยไม่นับ นิ้วที่กำลังลากอยู่ยังลากต่อ
+      if (dragging() && e.pointerId !== activePointer) return;
+      activePointer = null;
       try { canvas.releasePointerCapture(e.pointerId); } catch (err) {}
     }
     if (rotating) {
@@ -2241,8 +2313,8 @@
   window.addEventListener('keydown', function (e) {
     if (editor) return;                        // กำลังกรอกค่าอยู่ ปล่อยให้พิมพ์ลงกล่องไป
     if (keysBlocked()) return;
-    shiftHeld = e.shiftKey;
-    if (ctrlHeld !== e.ctrlKey) { ctrlHeld = e.ctrlKey; updateToolbar(); }
+    shiftHeld = shiftOn(e);
+    if (ctrlHeld !== ctrlOn(e)) { ctrlHeld = ctrlOn(e); updateToolbar(); }
 
     if (e.key === 'Escape') {                            // เลิกใช้เครื่องมือ + ปิดตาราง
       setTool(null);
@@ -2267,54 +2339,126 @@
 
     if (isCreateKey(e)) {
       e.preventDefault();
-      if (!canAddPoints(1)) return;
-
-      // ชี้อยู่ที่เส้นรอบวง = วางจุดเกาะลงบนเส้นนั้นเลย
-      var ht = hitTest(mouse.x, mouse.y);
-      if (ht.type === 'circle' || ht.type === 'arc') {
-        pushUndo();
-        if (addPointOnCircle(ht) !== null) settle();
-        return;
-      }
-
-      var g = snapToGuides(mouse.x, mouse.y);
-      pushUndo();
-      addPoint(g.x, g.y);
-      settle();                                  // สร้างทับจุดเดิมก็ยุบรวมให้เลย
+      placePointAt(mouse.x, mouse.y);            // ตรงที่เมาส์ชี้อยู่
       return;
     }
 
     if (isDeleteKey(e)) {
       e.preventDefault();
-      // ลบทุกอย่างที่เลือกอยู่ ถ้าไม่ได้เลือกอะไรก็ลบสิ่งที่เมาส์ชี้อยู่
-      var targets = selection.length ? selection.slice() : [hitTest(mouse.x, mouse.y)];
-      var did = false;
-      pushUndo();
-      for (var i = 0; i < targets.length; i++) {
-        if (deleteTarget(targets[i])) did = true;
-      }
-      if (did) {
-        selection = [];
-        drag = null;
-        rebuildFaces();
-      }
+      deleteSelected();
     }
   });
+
+  /* ลบทุกอย่างที่เลือกอยู่ ถ้าไม่ได้เลือกอะไรก็ลบสิ่งที่เมาส์ชี้อยู่
+     แยกจาก keydown เพราะปุ่ม "ลบ" บนแถบมือถือต้องเรียกตัวเดียวกันนี้
+     บนนิ้วจะไม่มีของที่ "ชี้อยู่" ปุ่มจึงมีผลเฉพาะเมื่อเลือกอะไรไว้แล้ว ซึ่งตรงกับที่เห็น */
+  function deleteSelected() {
+    var targets = selection.length ? selection.slice() : [hitTest(mouse.x, mouse.y)];
+    var did = false;
+    pushUndo();
+    for (var i = 0; i < targets.length; i++) {
+      if (deleteTarget(targets[i])) did = true;
+    }
+    if (did) {
+      selection = [];
+      drag = null;
+      rebuildFaces();
+    }
+    return did;
+  }
 
   window.addEventListener('keyup', function (e) {
     if (editor) return;
     /* keyup ไม่ return ทิ้งเหมือน keydown — ต้องปล่อยให้ Ctrl/Shift ที่ค้างอยู่
-       ตอนเปิดหน้าต่างได้คลายออก ไม่งั้นแถบเครื่องมือจะค้างเปิดหลังปิดหน้าต่าง */
-    shiftHeld = e.shiftKey;
-    if (ctrlHeld !== e.ctrlKey) { ctrlHeld = e.ctrlKey; updateToolbar(); }
+       ตอนเปิดหน้าต่างได้คลายออก ไม่งั้นแถบเครื่องมือจะค้างเปิดหลังปิดหน้าต่าง
+       ผ่าน ctrlOn/shiftOn เพื่อให้ปุ่มบนจอที่กดค้างไว้ไม่ถูกปล่อยตามปุ่มจริง */
+    shiftHeld = shiftOn(e);
+    if (ctrlHeld !== ctrlOn(e)) { ctrlHeld = ctrlOn(e); updateToolbar(); }
   });
   window.addEventListener('blur', function () {
-    shiftHeld = false; ctrlHeld = false;        // ตารางเป็นสวิตช์ ไม่ต้องล้างตอนสลับหน้าต่าง
+    // ธงจากปุ่มบนจอเป็นสวิตช์ที่ผู้ใช้ตั้งไว้เอง เช่นเดียวกับตาราง จึงไม่ล้างตอนสลับหน้าต่าง
+    shiftHeld = touchMods.shift; ctrlHeld = touchMods.ctrl;
     drag = null; marquee = null; creating = null; rotating = null;
+    activePointer = null;
     updateToolbar();
   });
   window.addEventListener('contextmenu', function (e) { e.preventDefault(); });
   window.addEventListener('resize', function () { closeEditor(); resize(); });
+
+  /* ============================================
+     แถบปุ่มโหมด (โหมดมือถือเท่านั้น)
+
+     แอปนี้ซ่อนความสามารถไว้หลังคีย์บอร์ดเกือบทั้งหมด นิ้วจึงต้องมีปุ่มมาแทน
+     ปุ่มที่นี่ไม่ได้ทำงานเอง — มันแค่ตั้งธงหรือเรียกฟังก์ชันเดิมที่ปุ่มจริงเรียกอยู่แล้ว
+     ตรรกะทั้งหมดจึงยังมีฉบับเดียว ไม่มีสองทางที่ต้องคอยแก้ให้ตรงกัน
+
+     "ไม่เลือกอะไรเลย" คือโหมดเลื่อนจอ ซึ่งเป็นพฤติกรรมเดิมของการลากที่ว่างอยู่แล้ว
+     จึงไม่มีปุ่มแยกให้มัน
+     ============================================ */
+  var modeBar = document.getElementById('geoModes');
+
+  if (onPhone && modeBar) {
+    // ปุ่มสลับค้าง: ตั้งธงอะไรบ้างเมื่อโหมดนี้เปิดอยู่
+    var MODES = {
+      place:   { ctrl: false, shift: false, place: true  },   // แตะวางจุด
+      select:  { ctrl: true,  shift: false, place: false },   // เลือก / เชื่อมด้าน
+      measure: { ctrl: false, shift: true,  place: false },   // ดูค่าที่วัดได้
+      edit:    { ctrl: true,  shift: true,  place: false }    // กรอกค่าทับ
+    };
+    var mode = null;
+
+    function wearMode(next) {
+      mode = (mode === next) ? null : next;                   // กดซ้ำที่เดิม = ปิด
+      var on = MODES[mode] || { ctrl: false, shift: false, place: false };
+      touchMods.ctrl = on.ctrl;
+      touchMods.shift = on.shift;
+      placeMode = on.place;
+      ctrlHeld = on.ctrl;
+      shiftHeld = on.shift;
+
+      // เครื่องมือบนแถบล่างกับโหมดตรงนี้ต่างก็กินการแตะบนกระดาษ เปิดพร้อมกันไม่ได้
+      if (mode) setTool(null);
+
+      var btns = modeBar.querySelectorAll('[data-mode]');
+      for (var i = 0; i < btns.length; i++) {
+        var b = btns[i], is = b.getAttribute('data-mode') === mode;
+        b.classList.toggle('active', is);
+        b.setAttribute('aria-pressed', String(is));
+      }
+      updateToolbar();
+    }
+
+    // สั่งงานทันที ทุกตัวคือฟังก์ชันเดิมที่คีย์ลัดเรียกอยู่แล้ว
+    var ACTIONS = {
+      del:   deleteSelected,
+      undo:  undo,
+      copy:  copySelection,
+      paste: pasteClipboard,
+      gridx: function () { toggleGrid('x'); },
+      gridy: function () { toggleGrid('y'); }
+    };
+
+    modeBar.addEventListener('click', function (e) {
+      var btn = e.target.closest('button');
+      if (!btn) return;
+      if (btn.hasAttribute('data-mode'))       wearMode(btn.getAttribute('data-mode'));
+      else if (btn.hasAttribute('data-act'))   (ACTIONS[btn.getAttribute('data-act')] || function () {})();
+    });
+
+    /* ปุ่มตารางเป็นสวิตช์ค้าง เช่นเดียวกับปุ่มแกนบนแถบเครื่องมือ — ต้องสะท้อนสถานะจริง
+       ไม่ใช่แค่สถานะที่ปุ่มนี้เคยกด เพราะกด x/y จากคีย์บอร์ดก็เปลี่ยนได้เหมือนกัน */
+    var syncGrids = function () {
+      var bx = modeBar.querySelector('[data-act="gridx"]');
+      var by = modeBar.querySelector('[data-act="gridy"]');
+      if (bx) { bx.classList.toggle('active', gridX); bx.setAttribute('aria-pressed', String(gridX)); }
+      if (by) { by.classList.toggle('active', gridY); by.setAttribute('aria-pressed', String(gridY)); }
+    };
+    modeBar.addEventListener('click', syncGrids);
+    window.addEventListener('keyup', syncGrids);
+
+    modeBar.hidden = false;
+    wearMode('place');            // เปิดมาให้วางจุดได้เลย ไม่ต้องเดาว่าต้องกดอะไรก่อน
+  }
 
   readPalette();
   /* สลับธีมแล้วต้องอ่านจานสีใหม่ ไม่งั้นรูปที่วาดไว้จะค้างสีของธีมเก่าอยู่บนกระดาษสีใหม่

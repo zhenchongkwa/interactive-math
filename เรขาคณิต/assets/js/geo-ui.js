@@ -115,6 +115,11 @@
       if (e.key === 'Control' || e.ctrlKey) dismiss();
     });
     if (opener) opener.addEventListener('click', dismiss);
+
+    /* บนนิ้วไม่มี Control ให้กด เงื่อนไขข้างบนจึงไม่มีวันเป็นจริง และใบ้ก็จะค้างจนครบ 11 วิ
+       ทุกครั้ง สิ่งที่แปลว่า "เจอแล้ว" ในโหมดมือถือคือการแตะแถบปุ่มโหมด */
+    var modes = document.getElementById('geoModes');
+    if (modes) modes.addEventListener('click', dismiss);
   });
 
 })(window);
