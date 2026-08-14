@@ -324,7 +324,11 @@
      point and no further. */
 
   var root = document.documentElement;
-  var THEME_KEY = 'calc-theme';
+  /* Shared with the main site and the geometry board, which write the same 'light'/'dark'
+     through IM.setTheme. It used to be a key of this page's own, so a choice made here was
+     forgotten the moment you followed a link, and one made there never reached this page —
+     the button looked broken from either side. The key in the head script must match. */
+  var THEME_KEY = 'im-theme';
   var systemLight = window.matchMedia('(prefers-color-scheme: light)');
 
   function remembered() {

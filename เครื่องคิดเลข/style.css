@@ -1219,11 +1219,15 @@ html.cursor-away .cur-ring {
 }
 .graph-zoom { display: none; gap: 4px; }
 :root[data-device="mobile"] .graph-zoom { display: flex; }
+/* 44px, not the 34 these were: they exist only on a phone, so a finger is the only thing
+   that will ever press them, and 44 is the size the rest of the project holds itself to for
+   exactly that reason. The head is space-between, so the extra width comes out of the gap
+   before the notes rather than pushing anything off the edge. */
 .graph-zoom button {
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   padding: 0;
-  border-radius: 10px;
+  border-radius: 12px;
   color: var(--ink-soft);
   font-size: 1rem;
   font-weight: 700;
