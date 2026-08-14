@@ -2,8 +2,8 @@
 
 **ภาษา:** [ไทย](#ภาษาไทย) · [English](#english)
 
-โครงงานคณิตศาสตร์แบบลงมือทำ — เว็บไซต์เรียนรู้ + เครื่องคิดเลขบล็อก + กระดานเรขาคณิต + สไลด์นำเสนอ
-Hands-on math learning project — a website, a drag-block calculator, a geometry board, and a slide deck.
+โครงงานคณิตศาสตร์แบบลงมือทำ — เว็บไซต์เรียนรู้ + เครื่องคิดเลขบล็อก + กระดานเรขาคณิต
+Hands-on math learning project — a website, a drag-block calculator, and a geometry board.
 
 🔗 **Live:** https://lpk37943-cyber.github.io/interactive-math/
 
@@ -22,7 +22,7 @@ Interactive Math เป็นโครงงานคอมพิวเตอร
 | 🌐 [`หน้าเว็บ/`](หน้าเว็บ/index.html) | หน้าเว็บหลัก มี Math Lab ให้ปรับค่ากราฟฟังก์ชันสด (sine/cosine/parabola ฯลฯ) และคลังบทเรียนวิดีโอที่ค้นหา/กรองตามหมวดได้ |
 | 🧮 [`เครื่องคิดเลข/`](เครื่องคิดเลข/เครื่องคิดเลข-บล็อก_2.html) | เครื่องคิดเลขที่ทุกตัวเลข/เครื่องหมายเป็นบล็อกลากได้จริง — Shift ลากยกทั้งพจน์ข้าม "=" แล้วกลับเครื่องหมายให้เอง, Ctrl คลิกแก้ค่าในบล็อก, แก้สมการและวาดกราฟให้อัตโนมัติ |
 | 📐 [`เรขาคณิต/`](เรขาคณิต/index.html) | กระดานวาดจุด-เส้น-รูปทรงอิสระ ระบบตรวจจับรูปปิดเองจากกราฟที่ลาก กด Shift ค้างดูมุม/ความยาว/พื้นที่ได้ทันที |
-| 📊 [`สไลด์นำเสนอ-Interactive-Math.html`](สไลด์นำเสนอ-Interactive-Math.html) | สไลด์สรุปทั้งโครงงานแบบโต้ตอบได้ เลื่อนด้วยลูกศร/ล้อเมาส์/ปัดนิ้ว |
+| 📄 [`โครงงานเว็บแอปแก้สมาการ.pdf`](โครงงานเว็บแอปแก้สมาการ.pdf) | เอกสารรูปเล่มของโครงงาน |
 
 ### วิธีใช้งาน
 
@@ -47,7 +47,7 @@ Interactive Math is a computer science school project by students at Loei Pittay
 | 🌐 [`หน้าเว็บ/`](หน้าเว็บ/index.html) | The main site — a Math Lab with live-adjustable function graphs (sine/cosine/parabola, etc.) and a searchable/filterable video lesson library |
 | 🧮 [`เครื่องคิดเลข/`](เครื่องคิดเลข/เครื่องคิดเลข-บล็อก_2.html) | A calculator where every digit and operator is a real draggable block — Shift-drag lifts a whole term across "=" and flips its sign automatically, Ctrl-click edits a value in place, and it solves equations and plots graphs on its own |
 | 📐 [`เรขาคณิต/`](เรขาคณิต/index.html) | A free-form board for points, lines, and shapes — it detects closed polygons from whatever you draw, and holding Shift shows angles, lengths, and area live |
-| 📊 [`สไลด์นำเสนอ-Interactive-Math.html`](สไลด์นำเสนอ-Interactive-Math.html) | An interactive slide deck summarizing the whole project — navigate with arrow keys, the mouse wheel, or a swipe |
+| 📄 [`โครงงานเว็บแอปแก้สมาการ.pdf`](โครงงานเว็บแอปแก้สมาการ.pdf) | The written project report |
 
 ### Usage
 
