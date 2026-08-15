@@ -189,6 +189,20 @@ body {
      every drag on a phone before the pointer path in script.js existed. */
   touch-action: none;
   position: relative; /* anchor for copies that are pinned while sliding out */
+  /* ...and it has to outrank the keypad, not just anchor things.
+
+     รายการคำตอบของป้าย "N คำตอบ" ห้อยลงมาจากจอ แล้วยาวพ้นขอบจอลงไปทับคีย์แพด
+     ตัวมันเองมี z-index:10 อยู่แล้วแต่ไม่มีผล เพราะ .block มี will-change:transform
+     ซึ่งสร้าง stacking context ขึ้นมาเอง z-index ของรายการจึงถูกขังอยู่ในบล็อกนั้น
+     ออกมาแข่งกับปุ่มคีย์แพดไม่ได้ และ .grid อยู่หลัง .display ใน DOM จึงวาดทับเสมอ
+
+     ผลที่เห็นคือครึ่งล่างของรายการถูกปุ่มบัง และเพราะปุ่มมี backdrop-filter:blur(14px)
+     มันไม่ได้แค่บัง แต่เบลอตัวหนังสือที่อยู่ข้างหลังด้วย อ่านออกมาเหมือนสองเลเยอร์ซ้อนกัน
+
+     ยกทั้งจอขึ้นมาทีเดียวแทนที่จะไปไล่แก้ z-index ของรายการ เพราะทุกอย่างที่ยื่นออกจากจอ
+     (ก๊อปปี้ที่กำลังเลื่อนออก, บล็อกที่ถูกลาก) ต้องอยู่เหนือคีย์แพดเหมือนกันหมด
+     5 พอให้ชนะคีย์แพด และยังต่ำกว่าปุ่มมุมขวา (41) กับการ์ดที่มันเปิด */
+  z-index: 5;
   background: #ffffff;
   border-radius: 14px;
   padding: 12px;
@@ -410,6 +424,18 @@ body {
    pointer would pass out of both on the way down. */
 .block-hint.block-listable {
   position: relative;
+}
+/* ...and while the list is down, this block has to outrank the ones after it.
+
+   ทุก .block มี will-change:transform ซึ่งทำให้แต่ละอันเป็น stacking context ของตัวเอง
+   ที่ z-index:auto จึงวาดเรียงตามลำดับใน DOM ล้วนๆ พอจอแคบจนสมการตกบรรทัด บล็อกที่อยู่
+   หลังป้ายนี้ (เช่น "=") จะไปนั่งอยู่แถวล่าง ตรงกับที่รายการคำตอบห้อยลงมาพอดี แล้ววาดทับมัน
+
+   ยกเฉพาะตอนรายการกางอยู่ ไม่ยกตลอด เพราะลำดับการวาดปกติของบล็อกมีความหมายกับ
+   ก๊อปปี้ที่เลื่อนเข้า-ออก ถ้ายกค้างไว้จะไปเปลี่ยนภาพตอนลากบล็อกโดยไม่ได้ตั้งใจ */
+.block-hint.block-listable:hover,
+.block-hint.block-listable.is-open {
+  z-index: 20;
 }
 .answers {
   display: none;
