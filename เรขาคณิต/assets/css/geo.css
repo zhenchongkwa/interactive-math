@@ -491,10 +491,16 @@ input{-webkit-user-select:text;user-select:text;}
    ============================================ */
 
 /* ---------- ตัวอย่างกดเดียวขึ้น ----------
-   วางเหนือใบ้อีกชั้น ใช้วัสดุ chrome ชุดเดียวกับแถบอื่นเพื่อให้อ่านเป็นของชุดเดียวกัน
-   ต่างจาก .geo-hint ตรงที่อันนี้กดได้ จึงต้องเปิด pointer-events ไว้ */
+   ใช้วัสดุ chrome ชุดเดียวกับแถบอื่นเพื่อให้อ่านเป็นของชุดเดียวกัน
+   ต่างจาก .geo-hint ตรงที่อันนี้กดได้ จึงต้องเปิด pointer-events ไว้
+
+   อยู่ใต้แถบบน ไม่ใช่เหนือแถบล่าง ทั้งสองโหมด — ข้างล่างมีของกางขึ้นมาหลายชั้น
+   ทั้งแถบเครื่องมือ กล่องตัวเลือกที่กางเหนือมัน (แผงรูปทรงสูงถึง 192px) และแถบปุ่มโหมด
+   ของมือถือ วัดแล้วตอนกางแผงรูปทรงบนโหมดคอม แถบนี้ไปนั่งกลางแผงพอดี
+   ข้างบนว่างทั้งแถบ และกระดาษก็ยังว่าง (แถบนี้โผล่เฉพาะตอนไม่มีอะไรบนกระดาษ)
+   จึงไม่ต้องแย่งที่กับอะไรเลย และไม่ต้องผูกตัวเลขกับความสูงของของที่กางได้ */
 .geo-examples{
-  position:fixed;left:50%;bottom:146px;z-index:35;
+  position:fixed;left:50%;top:92px;z-index:35;
   transform:translateX(-50%);
   display:flex;align-items:center;gap:7px;
   padding:6px 8px 6px 14px;
@@ -519,23 +525,16 @@ input{-webkit-user-select:text;user-select:text;}
 }
 .geo-examples button:hover{background:var(--chrome-press);color:var(--ink);}
 /* มีอะไรบนกระดาษแล้วก็ไม่ต้องชวนให้เริ่มอีก จางหายไปแล้วเลิกกินคลิก */
-.geo-examples.is-gone{opacity:0;transform:translateX(-50%) translateY(6px);pointer-events:none;}
+/* จางขึ้นบน เพราะแถบยึดจากขอบบน — เลื่อนลงจะดูเหมือนตกลงมาหากระดาษแทนที่จะเก็บตัว */
+.geo-examples.is-gone{opacity:0;transform:translateX(-50%) translateY(-6px);pointer-events:none;}
 
-/* โหมดมือถือย้ายขึ้นไปไว้ใต้แถบบน ไม่ใช่ต่อคิวอยู่ข้างล่าง
-
-   ข้างล่างมีแถบเครื่องมือ (สูง 58px) กับแถบปุ่มโหมดสองแถว (สูง 117px) ซ้อนกันอยู่แล้ว
-   วัดแล้วถ้าวางต่อขึ้นไปอีกจะกินความสูงรวมเกิน 250px จากจอ 800px และเคยทับแถบโหมด
-   จริงมาแล้ว 9px เพราะตัวเลข bottom ที่ตั้งไว้อิงความสูงของแถบโหมดที่เดาเอา
-
-   ข้างบนว่างทั้งแถบ กระดาษก็ยังว่าง (แถบนี้โผล่เฉพาะตอนยังไม่มีอะไรบนกระดาษ)
-   จึงไม่บังอะไรเลย และไม่ต้องผูกตัวเลขกับความสูงของแถบอื่นที่เปลี่ยนได้ */
+/* แถบบนของโหมดมือถือเตี้ยกว่า (padding 12px แทน 18px จบที่ 70px ไม่ใช่ 82px)
+   จึงขยับตามขึ้นมา ไม่ให้เหลือช่องว่างค้างอยู่กลางอากาศ */
 :root[data-device="mobile"] .geo-examples{
   top:calc(74px + env(safe-area-inset-top, 0px));
-  bottom:auto;
   max-width:calc(100vw - 20px);
   padding-left:8px;
 }
-:root[data-device="mobile"] .geo-examples.is-gone{transform:translateX(-50%) translateY(-6px);}
 :root[data-device="mobile"] .geo-examples button{padding:11px 14px;}
 
 /* ป้าย "เริ่มจากตัวอย่าง" กินไป 81px ซึ่งทำให้ทั้งแถบกว้าง 350px แล้วล้นออกนอกจอ 320px
