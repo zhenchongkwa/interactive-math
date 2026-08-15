@@ -37,16 +37,15 @@
     --ink-soft:#d6dfea;
     --ink-faint:#dbe3ec;
 
+    /* เขียวเหลือหน้าที่สองอย่าง: รัศมีรอบโลโก้ กับวงแหวนโฟกัส
+       เดิมมี --green-2 กับ --on-green คู่กันไว้ทำไล่เฉดของแถบเลือกอุปกรณ์ พอแถบนั้น
+       ถอดสีเขียวออก (เหตุผลอยู่ที่ .device ข้างล่าง) ทั้งคู่ก็ไม่มีใครใช้ จึงลบทิ้ง */
     --green:#88f4c5;
-    /* ปลายเข้มของแถบเขียว กับหมึกที่เขียนทับบนเขียว ไม่มีใน tokens.css ทั้งคู่
-       แต่ #08251a เป็นค่าเดียวกับที่ เรขาคณิต/assets/css/geo.css ใช้เป็นหมึกบนพื้นเขียว
-       จึงถือว่าเป็นค่าประจำโปรเจกต์อยู่แล้ว แค่ยังไม่ถูกยกขึ้นเป็น token */
-    --green-2:#34c98a;
-    --on-green:#08251a;
 
-    /* การ์ดลิงก์เป็นพื้นสว่างบนหน้ามืด ใช้คู่สีของธีมสว่างจาก tokens.css */
+    /* การ์ดลิงก์หลักเป็นพื้นสว่างบนหน้ามืด ใช้คู่สีของธีมสว่างจาก tokens.css */
     --card:#f5f7f9;
     --card-ink:#12161c;
+    --card-ink-soft:#5c6773;      /* คำอธิบายบนการ์ดขาว — ค่าเดียวกับ --ink-faint ธีมสว่าง */
   }
 
   *{box-sizing:border-box;margin:0;padding:0;}
@@ -62,78 +61,135 @@
   }
 
   /* พื้นขาวเพราะโลโก้ถือสีของตัวเองมาแล้ว (มิ้นต์กับหมึกเข้ม) วางบนพื้นเขียวเดิมมิ้นต์จะจมหาย
-     เงาเรืองเขียวยังอยู่ — เป็นตัวเดียวที่โยงวงกลมขาวนี้เข้ากับมิ้นต์ในโลโก้ */
+
+     รัศมีเขียวชั้นในเป็นของใหม่ ไม่ใช่ของประดับ: พอลิงก์ข้างล่างเหลือการ์ดขาวใบเดียว
+     (ที่เหลือเป็นกระจก) วงกลมขาวนี้กับการ์ดนั้นจะเป็นของขาวสองชิ้นบนหน้า รัศมีเขียว
+     คือสิ่งที่แยกโลโก้ออกมาเป็นตัวนำสายตา ไม่ให้อ่านเป็นแค่การ์ดอีกใบที่บังเอิญกลม */
   .avatar{
     width:92px;height:92px;border-radius:50%;
     display:flex;align-items:center;justify-content:center;
     background:#ffffff;
-    box-shadow:0 0 0 4px rgba(255,255,255,.1), 0 14px 34px -10px rgba(78,227,160,.55);
+    box-shadow:0 0 0 5px rgba(136,244,197,.16),
+               0 0 0 10px rgba(136,244,197,.06),
+               0 16px 38px -12px rgba(78,227,160,.5);
   }
   .avatar svg{width:68px;height:68px;}
 
   h1{font-size:1.4rem;font-weight:800;letter-spacing:-.01em;}
-  .bio{color:var(--ink-soft);font-size:.9rem;max-width:32ch;line-height:1.5;}
+  /* บอกว่าเว็บนี้คืออะไร ไม่ใช่สั่งให้ทำอะไร — คนที่กดลิงก์ที่แชร์ต่อกันมาถึงจะรู้ว่ามาถึงอะไร */
+  .bio{color:var(--ink-soft);font-size:.9rem;max-width:34ch;line-height:1.55;}
 
   /* ---------- ตัวเลือกอุปกรณ์ ----------
      เลือกที่นี่ที่เดียว แล้วทุกหน้าอ่านค่าเดียวกันจาก localStorage
      โหมดคอม = ของเดิมทุกอย่าง โหมดมือถือ = เลย์เอาต์ใหม่ + ปุ่มแทนคีย์ลัด
      ปุ่มสองอันนี้เลื่อนแถบเขียวไปมาแทนการเปลี่ยนสีทีละปุ่ม จะได้เห็นว่าเป็นสวิตช์
      ไม่ใช่ลิงก์สองอัน */
+  /* แคบกว่าลิงก์ข้างล่างโดยตั้งใจ และไม่มีสีจัดแล้ว
+
+     เดิมแถบที่เลื่อนเป็นไล่เฉดเขียว ซึ่งเป็นของชิ้นเดียวบนหน้าที่มีสีอิ่ม ผลคือสายตาไปหยุด
+     ที่ "สวิตช์ตั้งค่า" ก่อนของสี่อย่างที่คนเข้ามาเพื่อจะกด ลำดับกลับหัว
+     ตอนนี้เป็นฟิล์มขาวจางแทน ยังเห็นชัดว่าเลือกอะไรอยู่ แต่ไม่แย่งความสนใจ
+     ตำแหน่งยังอยู่เหนือลิงก์เหมือนเดิม เพราะโหมดอุปกรณ์มีผลกับเครื่องมือทุกตัว
+     ควรเลือกก่อนกดเข้าไปใช้ — ย้ายที่ไม่ใช่ทางแก้ ลดความดังต่างหาก */
   .device{
     position:relative;display:flex;
-    width:100%;max-width:420px;
-    padding:5px;border-radius:100px;
-    background:rgba(255,255,255,.07);
+    width:100%;max-width:300px;
+    padding:4px;border-radius:100px;
+    background:rgba(255,255,255,.06);
     box-shadow:inset 0 0 0 1px rgba(255,255,255,.09);
   }
   /* แถบที่เลื่อน วางใต้ปุ่มทั้งสอง ตำแหน่งคุมด้วย data-device บน <html> ล้วนๆ
      ไม่ต้องรอ JS ตั้งคลาสให้ทีหลัง */
   .device::before{
     content:'';position:absolute;z-index:0;
-    top:5px;bottom:5px;left:5px;width:calc(50% - 5px);
+    top:4px;bottom:4px;left:4px;width:calc(50% - 4px);
     border-radius:100px;
-    background:linear-gradient(180deg,var(--green),var(--green-2));
-    box-shadow:0 6px 16px -8px rgba(78,227,160,.7);
+    background:rgba(255,255,255,.14);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);
     transition:transform .22s cubic-bezier(.4,0,.2,1);
   }
   :root[data-device="mobile"] .device::before{transform:translateX(100%);}
   .device button{
     position:relative;z-index:1;flex:1;
-    padding:11px 10px;border:0;background:none;
-    font:inherit;font-size:.88rem;font-weight:700;
-    color:var(--ink-soft);cursor:pointer;
+    padding:9px 10px;border:0;background:none;
+    font:inherit;font-size:.82rem;font-weight:700;
+    color:var(--ink-faint);cursor:pointer;
     border-radius:100px;
     transition:color .22s ease;
     -webkit-tap-highlight-color:transparent;
   }
   :root[data-device="desktop"] .device button[data-device="desktop"],
-  :root[data-device="mobile"]  .device button[data-device="mobile"]{color:var(--on-green);}
+  :root[data-device="mobile"]  .device button[data-device="mobile"]{color:var(--ink);}
   .device button:focus-visible{outline:2px solid var(--green);outline-offset:3px;}
 
   .device-note{
-    color:var(--ink-faint);font-size:.78rem;line-height:1.5;
-    max-width:34ch;margin-top:-12px;
+    color:var(--ink-faint);font-size:.75rem;line-height:1.5;
+    max-width:34ch;margin-top:-14px;
   }
 
+  /* ---------- ลิงก์เครื่องมือ ----------
+     ของเดิมเป็นแคปซูลขาวสี่อันเหมือนกันเป๊ะ ทั้งที่ปลายทางต่างกันมาก ไม่มีอะไรช่วยให้เลือกถูก
+     ตอนนี้แยกเป็นสามชั้น: เว็บหลักเป็นการ์ดขาวทึบ (ทางเข้าหลัก) เครื่องมือสองตัวเป็นกระจก
+     ส่วนเอกสาร PDF ลงไปเป็นลิงก์ข้อความ เพราะเป็นของอ่าน ไม่ใช่ของเล่น ไม่ควรหนักเท่ากัน
+
+     ชิดซ้ายไม่ใช่กลาง เพราะมีสองบรรทัด — ข้อความสองบรรทัดที่จัดกลางทั้งคู่อ่านยากกว่า
+     และขอบซ้ายที่ตรงกันช่วยให้กวาดตาลงมาเทียบสามอันได้เร็ว */
   .links{
-    display:flex;flex-direction:column;gap:14px;
+    display:flex;flex-direction:column;gap:11px;
     width:100%;max-width:420px;
   }
   .links a{
-    display:flex;align-items:center;justify-content:center;gap:10px;
-    padding:18px 22px;border-radius:100px;
-    background:var(--card);color:var(--card-ink);
-    text-decoration:none;font-weight:700;font-size:1rem;
-    box-shadow:0 10px 24px -10px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.6);
-    transition:transform .15s ease, box-shadow .15s ease;
+    display:block;text-align:left;
+    padding:14px 18px;border-radius:18px;
+    text-decoration:none;
+    transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
     -webkit-tap-highlight-color:transparent;
   }
+  .links .t{display:block;font-weight:700;font-size:.98rem;line-height:1.3;}
+  .links .d{display:block;font-size:.76rem;line-height:1.45;margin-top:2px;}
+
+  /* ทางเข้าหลัก — ขาวทึบชิ้นเดียวในกลุ่ม จึงอ่านเป็น "เริ่มที่นี่" โดยไม่ต้องเขียนว่าเริ่มที่นี่ */
+  .links .primary{
+    background:var(--card);color:var(--card-ink);
+    box-shadow:0 10px 24px -10px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.6);
+  }
+  .links .primary .d{color:var(--card-ink-soft);}
+
+  .links .glass{
+    background:rgba(255,255,255,.09);color:var(--ink);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);
+  }
+  .links .glass .d{color:var(--ink-faint);}
+
   /* :hover ค้างหลังแตะบน iOS — เมาส์เท่านั้นที่ควรได้เอฟเฟกต์ยกขึ้น
      :active ยังทำงานทั้งสองแบบ นิ้วจึงยังได้ผลตอบกลับตอนกด */
   @media (hover:hover){
-    .links a:hover{transform:translateY(-2px);box-shadow:0 16px 30px -10px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.7);}
+    .links .primary:hover{transform:translateY(-2px);box-shadow:0 16px 30px -10px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.7);}
+    .links .glass:hover{transform:translateY(-2px);background:rgba(255,255,255,.14);}
+    .doc-link:hover{color:var(--ink);}
+    .doc-link:hover .u{border-bottom-color:var(--ink);}
   }
-  .links a:active{transform:scale(.97);}
+  .links a:active{transform:scale(.98);}
+  .links a:focus-visible,
+  .doc-link:focus-visible{outline:2px solid var(--green);outline-offset:3px;}
+
+  /* เอกสารโครงงาน — ลิงก์ข้อความ ไม่ใช่การ์ด ↗ บอกว่าเปิดแท็บใหม่ก่อนกด
+
+     padding ทำให้พื้นที่กดสูง 45px ตามเกณฑ์เป้าแตะที่โปรเจกต์ยึดไว้ทุกที่ ตัวข้อความเองสูงแค่
+     19px ซึ่งนิ้วกดพลาดง่าย เส้นใต้จึงย้ายไปอยู่ที่ span ข้างใน ไม่งั้นมันจะถูก padding
+     ดันห่างจากตัวหนังสือจนดูเหมือนเส้นลอยๆ ไม่ใช่เส้นใต้ */
+  .doc-link{
+    display:inline-flex;align-items:center;gap:6px;
+    color:var(--ink-faint);font-size:.82rem;text-decoration:none;
+    padding:13px 12px;
+    transition:color .15s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .doc-link .u{
+    border-bottom:1px solid rgba(219,227,236,.35);
+    padding-bottom:1px;
+    transition:border-color .15s ease;
+  }
 
   footer{
     margin-top:14px;
@@ -172,23 +228,38 @@
     </svg>
   </div>
   <h1>Interactive Math</h1>
-  <p class="bio">กรุณาเลือก</p>
+  <p class="bio">โครงงานคณิตศาสตร์แบบลงมือทำ — เครื่องมือสามชิ้นที่กดเล่นได้จริง</p>
 
   <div class="device" role="group" aria-label="เลือกอุปกรณ์ที่ใช้">
     <button type="button" data-device="desktop">คอมพิวเตอร์</button>
     <button type="button" data-device="mobile">มือถือ</button>
   </div>
-  <p class="device-note">เลือกครั้งเดียวใช้ได้ทุกหน้า — โหมดมือถือจะจัดหน้าใหม่ให้แตะง่าย
-    และเพิ่มปุ่มแทนคีย์ลัดในเครื่องคิดเลขกับกระดานเรขาคณิต</p>
+  <p class="device-note">เลือกครั้งเดียวใช้ได้เว็บเพจ</p>
 
+  <!-- คำอธิบายใต้ชื่อแต่ละอันสรุปมาจากตาราง "ส่วนประกอบ" ใน README ให้ตรงกัน
+       จะได้ไม่มีสองที่ที่บอกไม่เหมือนกันเวลาแก้ทีหลัง -->
   <nav class="links">
-    <a href="หน้าเว็บ/index.html">เว็บไซต์หลัก</a>
-    <a href="เครื่องคิดเลข/เครื่องคิดเลข-บล็อก_2.html">เครื่องคิดเลขบล็อก</a>
-    <a href="เรขาคณิต/index.html">กระดานเรขาคณิต</a>
-    <!-- เปิดแท็บใหม่ ให้ตัวอ่าน PDF ในตัวของเบราว์เซอร์จัดการ
-         ทำงานทั้งตอนเปิดไฟล์ตรงๆ และบน GitHub Pages ไม่ต้องพึ่งไลบรารีอะไร -->
-    <a href="โครงงานเว็บแอปแก้สมาการ.pdf" target="_blank" rel="noopener">เอกสารโครงงาน (PDF)</a>
+    <a class="primary" href="หน้าเว็บ/index.html">
+      <span class="t">เว็บไซต์หลัก</span>
+      <span class="d">ปรับค่ากราฟฟังก์ชันสด และคลังบทเรียน</span>
+    </a>
+    <a class="glass" href="เครื่องคิดเลข/เครื่องคิดเลข-บล็อก_2.html">
+      <span class="t">เครื่องคิดเลขบล็อก</span>
+      <span class="d">ลากพจน์ข้ามเท่ากับ แก้สมการและวาดกราฟให้เอง</span>
+    </a>
+    <a class="glass" href="เรขาคณิต/index.html">
+      <span class="t">กระดานเรขาคณิต</span>
+      <span class="d">วาดจุด เส้น รูปทรง วัดมุม ความยาว พื้นที่ทันที</span>
+    </a>
   </nav>
+
+  <!-- เปิดแท็บใหม่ ให้ตัวอ่าน PDF ในตัวของเบราว์เซอร์จัดการ
+       ทำงานทั้งตอนเปิดไฟล์ตรงๆ และบน GitHub Pages ไม่ต้องพึ่งไลบรารีอะไร
+       ย้ายออกจาก <nav class="links"> เพราะไม่ใช่เครื่องมือ เป็นเอกสารประกอบ -->
+  <a class="doc-link" href="โครงงานเว็บแอปแก้สมาการ.pdf" target="_blank" rel="noopener">
+    <span class="u">เอกสารโครงงาน (PDF)</span>
+    <span aria-hidden="true">↗</span>
+  </a>
 
   <footer> โรงเรียนเลยพิทยาคม</footer>
 
