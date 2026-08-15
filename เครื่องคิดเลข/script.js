@@ -3729,4 +3729,20 @@ alphabet.split('').forEach(letter => {
   lettersDiv.appendChild(btn);
 });
 
+/* ตัวอย่างกดเดียวขึ้น — สมการใน data-eq ถูกป้อนทีละตัวอักษรผ่าน action() ตัวเดียวกับที่
+   ปุ่มบนคีย์แพดเรียก จึงไม่มีทางสร้างบล็อกที่พิมพ์เองไม่ได้ และไม่ต้องมีตัวแยกวิเคราะห์
+   ชุดที่สอง ที่ต้องคอยแก้ให้ตรงกับของจริง
+
+   ล้างก่อนเสมอ ไม่ใช่ต่อท้ายของเดิม เพราะ "ลองดู" ควรได้สมการนั้นจริงๆ ไม่ใช่สมการนั้น
+   ต่อหางสิ่งที่ค้างอยู่ */
+const tryout = document.getElementById('tryout');
+if (tryout) {
+  tryout.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-eq]');
+    if (!btn) return;
+    clearAll();
+    for (const ch of btn.dataset.eq) action(ch);
+  });
+}
+
 render();

@@ -490,6 +490,39 @@ input{-webkit-user-select:text;user-select:text;}
    7. ข้อความใบ้ตอนเปิดครั้งแรก
    ============================================ */
 
+/* ---------- ตัวอย่างกดเดียวขึ้น ----------
+   วางเหนือใบ้อีกชั้น ใช้วัสดุ chrome ชุดเดียวกับแถบอื่นเพื่อให้อ่านเป็นของชุดเดียวกัน
+   ต่างจาก .geo-hint ตรงที่อันนี้กดได้ จึงต้องเปิด pointer-events ไว้ */
+.geo-examples{
+  position:fixed;left:50%;bottom:146px;z-index:35;
+  transform:translateX(-50%);
+  display:flex;align-items:center;gap:7px;
+  padding:6px 8px 6px 14px;
+  background:var(--chrome-bg);
+  border:1px solid var(--chrome-line);
+  border-radius:100px;
+  box-shadow:var(--chrome-shadow);
+  backdrop-filter:blur(18px) saturate(160%);
+  -webkit-backdrop-filter:blur(18px) saturate(160%);
+  transition:opacity .4s var(--ease-out), transform .4s var(--ease-out);
+}
+.ge-label{font-size:.78rem;color:var(--ink-faint);white-space:nowrap;}
+.geo-examples button{
+  padding:7px 13px;border-radius:100px;
+  font:600 .78rem var(--sans);
+  color:var(--chrome-ink);
+  background:var(--chrome-hover);
+  border:1px solid transparent;
+  cursor:pointer;white-space:nowrap;
+  transition:background .2s var(--ease-out), color .2s var(--ease-out);
+  -webkit-tap-highlight-color:transparent;
+}
+.geo-examples button:hover{background:var(--chrome-press);color:var(--ink);}
+/* มีอะไรบนกระดาษแล้วก็ไม่ต้องชวนให้เริ่มอีก จางหายไปแล้วเลิกกินคลิก */
+.geo-examples.is-gone{opacity:0;transform:translateX(-50%) translateY(6px);pointer-events:none;}
+:root[data-device="mobile"] .geo-examples{bottom:186px;}
+:root[data-device="mobile"] .geo-examples button{padding:11px 14px;}
+
 .geo-hint{
   position:fixed;left:50%;bottom:100px;z-index:35;
   transform:translateX(-50%);

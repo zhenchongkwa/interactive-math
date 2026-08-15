@@ -116,6 +116,41 @@ body {
   line-height: 1.7;
 }
 
+/* ---------- ตัวอย่างกดเดียวขึ้น ----------
+   ชิปเล็กๆ ไม่ใช่ปุ่มเต็มตัว เพราะเป็นทางลัดไม่ใช่ฟังก์ชันหลักของเครื่อง
+   ตัวสมการใช้ฟอนต์ mono เพื่อให้อ่านเป็นสมการ ไม่ใช่ประโยค */
+.tryout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 14px;
+}
+.tryout-label {
+  color: var(--ink-faint);
+  font-size: .76rem;
+}
+.tryout button {
+  padding: 7px 13px;
+  border-radius: 100px;
+  font-family: var(--mono);
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, .07);
+  border: 1px solid var(--rim-soft);
+  box-shadow: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.tryout button:hover {
+  color: var(--ink);
+  background: rgba(255, 255, 255, .13);
+}
+/* เป้าแตะ 44px ตามเกณฑ์ที่โปรเจกต์ยึดไว้ ชิปสูงจริงแค่ ~30px จึงต้องดันด้วย padding */
+:root[data-device="mobile"] .tryout button { padding: 11px 15px; font-size: .82rem; }
+
 /* The machine itself: the glass card recipe from assets/css/layout.css, which is the one
    thing in that file this page has a use for — the rest of it dresses a nav, a hero and a
    footer none of which are here.

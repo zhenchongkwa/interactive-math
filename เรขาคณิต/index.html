@@ -6,7 +6,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>เรขาคณิต — กระดาษวาดรูปที่วัดค่าได้</title>
+<title>กระดานเรขาคณิต — Interactive Math</title>
+
+<!-- ไอคอนแท็บ + ภาพตอนแชร์ลิงก์ — ดูคำอธิบายเรื่อง URL เต็มที่ ../index.html -->
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<meta name="description" content="กระดานวาดจุด เส้น และรูปทรงอิสระ ตรวจจับรูปปิดเองจากเส้นที่ลาก แล้ววัดมุม ความยาว และพื้นที่ให้ทันที">
+<meta property="og:type" content="website">
+<meta property="og:title" content="กระดานเรขาคณิต — Interactive Math">
+<meta property="og:description" content="วาดจุด เส้น รูปทรง วัดมุม ความยาว พื้นที่ทันที">
+<meta property="og:image" content="https://lpk37943-cyber.github.io/interactive-math/assets/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
 
 <!-- ต้องรันก่อน CSS โหลด ไม่งั้นคนที่เลือกธีมมืดไว้จะเห็นกระดาษขาววาบขึ้นมาก่อนหนึ่งเฟรม
      คีย์ 'im-theme' ต้องตรงกับที่ IM.setTheme เขียนไว้ใน assets/js/core.js
@@ -302,6 +312,19 @@
      ข้อความใบ้ครั้งแรก — geo-ui.js ซ่อนให้เมื่อผู้ใช้กด Ctrl / เปิดหน้าต่างปุ่มลัด / ครบ 11 วิ
      แล้วจำไว้ใน localStorage จะได้ไม่ทวงซ้ำ
      ============================================ -->
+<!-- ============================================
+     ตัวอย่างกดเดียวขึ้น — โผล่เฉพาะตอนกระดาษยังว่าง แล้วหายไปเองเมื่อมีอะไรบนกระดาษ
+     กระดานนี้เปิดมาเจอกระดาษเปล่าสนิท คนที่ไม่เคยใช้จะไม่รู้ว่ากดอะไรได้บ้าง
+     พอมีรูปขึ้นมาแล้วค่อยกด Shift ดูค่าที่วัดได้ ความสามารถทั้งหมดก็เปิดออกเอง
+     app.js เป็นคนผูกปุ่มและคุมการซ่อน/แสดง
+     ============================================ -->
+<div id="geoExamples" class="geo-examples">
+  <span class="ge-label">เริ่มจากตัวอย่าง</span>
+  <button type="button" data-example="triangle">สามเหลี่ยม</button>
+  <button type="button" data-example="square">สี่เหลี่ยม</button>
+  <button type="button" data-example="circle">วงกลม</button>
+</div>
+
 <div id="geoHint" class="geo-hint">
   <!-- สองข้อความ สลับกันแสดงด้วย CSS จาก [data-device] ล้วน (geo.css) ไม่ต้องรอ JS
        ข้อความคีย์บอร์ดไม่มีความหมายเลยบนนิ้ว ซึ่งกดปุ่มพวกนี้ไม่ได้สักปุ่ม -->

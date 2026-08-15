@@ -3,7 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>เครื่องคิดเลข</title>
+<title>เครื่องคิดเลขบล็อก — Interactive Math</title>
+
+<!-- ไอคอนแท็บ + ภาพตอนแชร์ลิงก์ — ดูคำอธิบายเรื่อง URL เต็มที่ ../index.html -->
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<meta name="description" content="เครื่องคิดเลขที่ทุกตัวเลขและเครื่องหมายเป็นบล็อกลากได้จริง ยกทั้งพจน์ข้ามเครื่องหมายเท่ากับแล้วกลับเครื่องหมายให้เอง แก้สมการและวาดกราฟอัตโนมัติ">
+<meta property="og:type" content="website">
+<meta property="og:title" content="เครื่องคิดเลขบล็อก — Interactive Math">
+<meta property="og:description" content="ลากพจน์ข้ามเท่ากับ แก้สมการและวาดกราฟให้เอง">
+<meta property="og:image" content="https://lpk37943-cyber.github.io/interactive-math/assets/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
 <!-- ต้องอยู่ก่อน <link> ทุกอัน และต้องเป็น inline ไม่ใช่ไฟล์นอก
      ถ้าไปตั้งธีมใน shortcuts.js (ท้าย body) หน้าจะถูกวาดด้วยธีมเข้มก่อนหนึ่งเฟรม
      แล้วค่อยกระพริบเป็นสว่าง ทุกครั้งที่โหลดในโหมดสว่าง -->
@@ -55,6 +65,18 @@
        หั่นทีละตัวอักษรไม่ได้ สระและวรรณยุกต์จะหลุดจากพยัญชนะ -->
   <h1 data-split>เครื่องคิดเลขบล็อก</h1>
   <p class="lead reveal">ลากพจน์ข้ามเท่ากับ · Ctrl-คลิกเพื่อแก้ · แก้สมการและวาดกราฟให้เอง</p>
+
+  <!-- ตัวอย่างกดเดียวขึ้น — เครื่องนี้เปิดมาเจอจอเปล่า ความสามารถที่ดีที่สุดของมัน
+       (ยกพจน์ข้ามเท่ากับแล้วกลับเครื่องหมายให้เอง) จึงมองไม่เห็นเลยจนกว่าจะพิมพ์สมการเองก่อน
+       สามปุ่มนี้เลือกมาให้เห็นคนละอย่าง: สมการง่าย, ตัวแปรอยู่สองฝั่ง (ต้องยกพจน์ถึงจะแก้ได้),
+       และสองตัวแปรซึ่งทำให้กราฟโผล่ขึ้นมาเอง
+       script.js เป็นคนผูกปุ่ม ถ้ามันโหลดไม่ทันปุ่มจะไม่ทำอะไร แต่ก็ไม่พังอะไรด้วย -->
+  <div class="tryout" id="tryout">
+    <span class="tryout-label">ลองดู</span>
+    <button type="button" data-eq="2X+3=7">2X + 3 = 7</button>
+    <button type="button" data-eq="5X−2=3X+8">5X − 2 = 3X + 8</button>
+    <button type="button" data-eq="Y=2X+1">Y = 2X + 1</button>
+  </div>
 </header>
 
 <div class="app">

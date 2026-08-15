@@ -4,6 +4,15 @@
 
    ทุกโมดูลต้อง subscribe เข้ามาที่ ticker ตัวนี้
    ห้ามเปิด requestAnimationFrame ของตัวเอง
+
+   *** ไฟล์นี้มีสามสำเนาและต้องเหมือนกันทุกตัวอักษร ***
+   หน้าเว็บ/ · เครื่องคิดเลข/ · เรขาคณิต/ — แต่ละหน้าโหลดจากโฟลเดอร์ตัวเองเพราะเปิดจาก
+   file:// ได้โดยไม่ต้องมีเซิร์ฟเวอร์ จึงแชร์โฟลเดอร์เดียวกันไม่ได้
+   แก้ที่ไหนต้องคัดลอกให้ครบทั้งสาม ตรวจด้วย:
+       diff หน้าเว็บ/assets/js/core.js เครื่องคิดเลข/assets/js/core.js
+       diff หน้าเว็บ/assets/js/core.js เรขาคณิต/assets/js/core.js
+   ถ้ามีบางหน้าไม่ได้ใช้ความสามารถบางอย่างในนี้ ปล่อยให้มันอยู่เฉยๆ ได้
+   อย่าตัดออกเฉพาะสำเนานั้น — สำเนาที่แยกทางแล้วคือที่มาของบั๊กที่หาไม่เจอ
    ============================================ */
 (function (w) {
   'use strict';
@@ -245,27 +254,58 @@
      ไม่งั้นหน้าเบื้องหลังจะไหลตามขณะดูวิดีโอ */
   IM.scrollLocked = false;
 
-  /* ---------- โหมดอุปกรณ์ (desktop/mobile) ----------
-     ข้อความชุดเดียวกับใน หน้าเว็บ/assets/js/core.js — แก้ที่ไหนต้องแก้ให้ครบทั้งสามสำเนา
-     (หน้านี้ไม่มีบล็อกธีมของเว็บแม่ เพราะ shortcuts.js สลับธีมเองอยู่แล้ว — แต่เก็บที่คีย์
-     'im-theme' ตัวเดียวกับทุกหน้า ตัวเลือกจึงข้ามหน้าได้ ส่วนโหมดอุปกรณ์ก็ใช้ร่วมกัน
-     ทุกหน้าเหมือนกัน จึงต้องมีที่นี่ด้วย)
+  /* ---------- theme (dark/light) ----------
+     แพทเทิร์นเดียวกับ motionOK/onMotionPrefChange ข้างบน
+     ค่าเริ่มต้นอ่านจาก data-theme ที่ inline script กัน FOUC ใน <head> ตั้งไว้แล้ว
+     (ต้องรันก่อน CSS โหลดถึงจะไม่มีพื้นมืดวาบตอนเลือก light ไว้)
+     ห้ามให้ core.js เป็นคนตัดสินใจค่าเริ่มต้นเอง — แค่ "อ่าน" สถานะที่ตั้งไว้แล้ว    */
 
-     ค่าถูกตั้งโดย inline script ใน <head> ซึ่งต้องรันก่อน CSS โหลด ที่นี่แค่อ่าน
+  IM.theme = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+
+  var themeListeners = [];
+  IM.onThemeChange = function (fn) { themeListeners.push(fn); };
+
+  IM.setTheme = function (next) {
+    IM.theme = next;
+    if (next === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    else document.documentElement.removeAttribute('data-theme');
+
+    // localStorage อาจถูกบล็อก (private mode / เบราว์เซอร์บางตัว) — อย่าให้พังทั้งฟีเจอร์
+    try { localStorage.setItem('im-theme', next); } catch (e) {}
+
+    for (var i = 0; i < themeListeners.length; i++) {
+      try { themeListeners[i](next); } catch (e) { console.warn('[IM] theme listener', e); }
+    }
+  };
+
+  /* ---------- โหมดอุปกรณ์ (desktop/mobile) ----------
+     แพทเทิร์นเดียวกับธีมข้างบนทุกอย่าง ต่างกันที่ค่าเริ่มต้นเดาจากอุปกรณ์ให้ก่อน
+     แล้วผู้ใช้เลือกทับได้ที่หน้ารวมลิงก์ เลือกแล้วจำไว้ใช้ทุกหน้า
+
+     ค่าถูกตั้งโดย inline script ใน <head> ของทุกหน้า ซึ่งต้องรันก่อน CSS โหลด
+     ไม่งั้นมือถือจะเห็นเลย์เอาต์คอมวาบขึ้นมาก่อนหนึ่งเฟรม ที่นี่แค่ "อ่าน"
+     ค่านั้นเหมือนที่ IM.theme ทำ ห้ามให้ core.js เป็นคนตัดสินใจเอง
+
      กฎ CSS ของโหมดมือถือทุกข้อ key จาก [data-device="mobile"] ไม่ใช่ @media
-     โหมดคอมจึงไม่ match กฎใหม่สักข้อ */
+     โหมดคอมจึงไม่ match กฎใหม่สักข้อ — ได้หน้าตาเดิมเป๊ะไม่ว่าจอจะแคบแค่ไหน
+     และคนที่เปิดบนมือถือแต่เลือก "คอมพิวเตอร์" ก็ได้ของเดิมจริงๆ ไม่ใช่ของครึ่งๆ */
 
   IM.device = document.documentElement.dataset.device === 'mobile' ? 'mobile' : 'desktop';
   IM.isMobile = IM.device === 'mobile';
 
-  /* เอฟเฟกต์ที่จ่ายค่าทุกเฟรมเพื่อสิ่งที่ต้องมีเมาส์ถึงจะได้กลับมา ควรทำงานเมื่อ
-     "มีเมาส์จริง และผู้ใช้ยังอยู่โหมดคอม" เท่านั้น สองเงื่อนไขนี้ต้องเช็คคู่กันเสมอ */
+  /* เอฟเฟกต์ที่จ่ายค่าทุกเฟรมเพื่อสิ่งที่ต้องมีเมาส์ถึงจะได้กลับมา — การ์ดเอียงตามเคอร์เซอร์,
+     เคอร์เซอร์วาดเอง, magnetic, parallax, canvas อนุภาค — ควรทำงานเมื่อ "มีเมาส์จริง
+     และผู้ใช้ยังอยู่โหมดคอม" เท่านั้น สองเงื่อนไขนี้ต้องเช็คคู่กันเสมอ ถ้าปล่อยให้แต่ละไฟล์
+     เขียนเอง จะมีไฟล์ที่ลืมข้างหนึ่งเสมอ (ก่อนหน้านี้ field/hero/scroll ลืม isCoarse กันหมด) */
   IM.mouseFx = function () { return !IM.isCoarse && IM.device !== 'mobile'; };
 
   IM.setDevice = function (next) {
     if (next !== 'mobile' && next !== 'desktop') return;
     try { localStorage.setItem('im-device', next); } catch (e) {}
     if (next === IM.device) return;
+    /* โหลดใหม่แทนการสลับสด: โมดูลตัดสินใจว่าจะ subscribe ticker ไหมตอนบูตครั้งเดียว
+       และ script.js/app.js ผูก listener ตามโหมดไปแล้ว การถอดทุกอย่างกลับกลางคัน
+       มีทางพลาดมากกว่าที่ได้ — reload คือทางที่ถูกเสมอ */
     w.location.reload();
   };
 

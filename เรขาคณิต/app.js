@@ -988,8 +988,30 @@
     if (selection.length && !drag && !creating && !marquee && !toolUsesCanvas()) drawRotUI();
 
     ctx.restore();
-    requestAnimationFrame(draw);
+    refreshExamples();
+    drawRaf = requestAnimationFrame(draw);
   }
+
+  /* ลูปข้างบนวนตลอดเวลาโดยไม่สนว่ามีอะไรเปลี่ยนไหม ซึ่งเป็นเจตนา — กระดานนี้มีทั้ง hover,
+     เส้นนำ, ที่จับหมุน และค่าที่วัดได้ ที่ต้องอัปเดตตามเมาส์ตลอด การไล่ตั้งธง dirty ให้ครบ
+     ทุกจุดที่เปลี่ยนสถานะมีทางพลาดมากกว่าที่ได้
+
+     แต่ตอนแท็บถูกซ่อนไม่มีใครดูอยู่ วาดต่อคือเผา CPU กับแบตทิ้งเปล่าๆ core.js หยุด ticker
+     ของตัวเองตอน visibilitychange อยู่แล้ว แต่ลูปนี้เป็น rAF ของ app.js เอง จึงไม่ได้ถูกหยุด
+     ไปด้วย ต้องหยุดเองตรงนี้
+
+     เบราว์เซอร์ throttle rAF ในแท็บที่ซ่อนอยู่แล้ว แต่ throttle ไม่ใช่หยุด และบางเบราว์เซอร์
+     ยังปล่อยให้เดินต่อเมื่อหน้าต่างแค่ถูกบัง ไม่ได้ย่อ — หยุดเองชัวร์กว่า */
+  var drawRaf = 0;
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      cancelAnimationFrame(drawRaf);
+      drawRaf = 0;
+    } else if (!drawRaf) {
+      drawRaf = requestAnimationFrame(draw);
+    }
+  });
 
   // ตารางเส้น + จุดพรีวิวว่ากด 1 แล้วจุดจะไปลงตรงไหน
   // เรียกจากใน draw() ขณะที่ ctx ยัง translate(camera.x, camera.y) ค้างอยู่ พิกัดในนี้จึง
@@ -2491,6 +2513,64 @@
 
     modeBar.hidden = false;
     wearMode('place');            // เปิดมาให้วางจุดได้เลย ไม่ต้องเดาว่าต้องกดอะไรก่อน
+  }
+
+  /* ============================================
+     ตัวอย่างกดเดียวขึ้น
+
+     สร้างผ่าน addPoint/connect/settle ตัวเดียวกับที่การวาดด้วยมือใช้ จึงได้รูปที่มีสถานะ
+     เหมือนรูปที่ผู้ใช้วาดเองทุกประการ — ลากต่อได้ ลบได้ ย้อนได้ วัดค่าได้ ไม่ใช่ภาพนิ่ง
+     ที่ฝังไว้เป็นกรณีพิเศษแล้วต้องคอยตามแก้เมื่อกฎอื่นเปลี่ยน
+
+     พิกัดคิดจากกลางจอแล้วลบ camera ออก เพราะทุกอย่างในไฟล์นี้เก็บเป็นพิกัดโลก
+     ถ้าเลื่อนกระดาษไปแล้วกดตัวอย่าง รูปจะยังมาโผล่ตรงกลางที่มองเห็นอยู่
+     ============================================ */
+  var examplesEl = document.getElementById('geoExamples');
+
+  function loadExample(kind) {
+    pushUndo();
+    points = []; edges = []; circles = []; faces = []; selection = [];
+    drag = null; marquee = null; creating = null; rotating = null;
+
+    var cx = window.innerWidth / 2 - camera.x;
+    var cy = window.innerHeight / 2 - camera.y;
+    var r = Math.min(window.innerWidth, window.innerHeight) * 0.17;
+    r = Math.max(70, Math.min(r, 150));
+
+    if (kind === 'circle') {
+      circles.push({ id: nextCircleId++, cx: cx, cy: cy, rx: r, ry: r });
+    } else {
+      // สามเหลี่ยมด้านเท่าวางปลายขึ้น ส่วนสี่เหลี่ยมเป็นจัตุรัสจริง ไม่ใช่ผืนผ้า
+      // จะได้เห็นตอนกด Shift ว่าค่าที่วัดได้ออกมาเท่ากันจริงตามรูป
+      var pts = kind === 'triangle'
+        ? [[cx, cy - r], [cx + r * 0.866, cy + r * 0.5], [cx - r * 0.866, cy + r * 0.5]]
+        : [[cx - r, cy - r], [cx + r, cy - r], [cx + r, cy + r], [cx - r, cy + r]];
+      var ids = [];
+      for (var i = 0; i < pts.length; i++) ids.push(addPoint(pts[i][0], pts[i][1]));
+      for (i = 0; i < ids.length; i++) connect(ids[i], ids[(i + 1) % ids.length]);
+    }
+    settle();
+  }
+
+  if (examplesEl) {
+    examplesEl.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-example]');
+      if (!btn) return;
+      loadExample(btn.getAttribute('data-example'));
+    });
+  }
+
+  /* ซ่อนเมื่อกระดาษไม่ว่างแล้ว เช็คใน draw() ซึ่งเดินทุกเฟรมอยู่แล้ว แต่แตะ DOM เฉพาะตอน
+     ค่าเปลี่ยนจริง — จุดถูกเพิ่ม/ลบได้จากหลายทาง (วาดเอง วาง undo ลบ) การไปตั้งธงให้ครบ
+     ทุกทางมีโอกาสตกหล่นมากกว่าเทียบค่าเดียวต่อเฟรม */
+  var boardWasEmpty = null;
+
+  function refreshExamples() {
+    if (!examplesEl) return;
+    var empty = points.length === 0 && circles.length === 0;
+    if (empty === boardWasEmpty) return;
+    boardWasEmpty = empty;
+    examplesEl.classList.toggle('is-gone', !empty);
   }
 
   readPalette();

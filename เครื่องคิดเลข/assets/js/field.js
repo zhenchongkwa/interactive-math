@@ -20,8 +20,12 @@
     var ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
-    /* ---------- สีดึงจาก CSS custom properties ครั้งเดียว ----------
-       ธีมยังคุมจาก tokens.css ที่เดียว ไม่ hardcode ซ้ำ            */
+    /* ---------- สีดึงจาก CSS custom properties ----------
+       ธีมยังคุมจาก tokens.css ที่เดียว ไม่ hardcode ซ้ำ
+
+       อ่านผ่านฟังก์ชันแทนที่จะอ่านครั้งเดียวตอน setup() เฉยๆ
+       เพราะตอนสลับ dark/light ตัวแปร --green/--blue เปลี่ยนค่าจริง
+       ถ้าไม่มาอ่านซ้ำ อนุภาคจะค้างสีธีมเก่าจนกว่าจะ resize หน้าต่าง */
 
     function readVar(name, fallback) {
       var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -34,11 +38,14 @@
       return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
     }
 
-    var GREEN = hexToRgb(readVar('--green', '#0e7c5c'));
-    var BLUE = hexToRgb(readVar('--blue', '#2e9fd6'));
+    var rgbGreen, rgbBlue;
 
-    var rgbGreen = GREEN.join(',');
-    var rgbBlue = BLUE.join(',');
+    function readColors() {
+      rgbGreen = hexToRgb(readVar('--green', '#0e7c5c')).join(',');
+      rgbBlue = hexToRgb(readVar('--blue', '#2e9fd6')).join(',');
+    }
+    readColors();
+    IM.onThemeChange(readColors);
 
     /* ---------- ค่าคงที่ ---------- */
 
